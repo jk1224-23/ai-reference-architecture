@@ -1,17 +1,17 @@
-# Article 4 ó Agent Patterns  
+# Article 4 ‚Äî Agent Patterns  
 ## Bounded Autonomy in Enterprise AI
 
 ---
 
 ## Why this document exists
-ìAgent-based AIî is one of the most misunderstood concepts in enterprise systems.
+‚ÄúAgent-based AI‚Äù is one of the most misunderstood concepts in enterprise systems.
 
 In many implementations, agents are introduced as:
 - autonomous actors
 - long-running workflows
 - systems that decide and act independently
 
-In regulated environments such as healthcare, **unbounded autonomy is not innovation ó it is risk**.
+In regulated environments such as healthcare, **unbounded autonomy is not innovation ‚Äî it is risk**.
 
 This document defines **bounded autonomy** as an architectural pattern that allows AI agents to assist, reason, and coordinate actions **without exceeding explicit decision authority**.
 
@@ -39,7 +39,7 @@ This article explains how **agent behavior is constrained by design**, not by in
 
 ---
 
-## What an ìagentî means in this architecture
+## What an ‚Äúagent‚Äù means in this architecture
 In this reference architecture, an agent is defined as:
 
 > A **reasoning component** that can propose actions, request tools, and coordinate multi-step flows **within explicitly defined limits**.
@@ -50,7 +50,7 @@ An agent is **not**:
 - a replacement for business workflows
 - a long-running background process with unchecked permissions
 
-This definition intentionally narrows the scope of what ìagentî means.
+This definition intentionally narrows the scope of what ‚Äúagent‚Äù means.
 
 ---
 
@@ -75,7 +75,7 @@ Without scope constraints, agents tend to generalize beyond their intended purpo
 - Cross-domain reasoning requires orchestration approval.
 
 **Example**
-A ìclaims assistanceî agent may explain claim status but cannot initiate appeals.
+A ‚Äúclaims assistance‚Äù agent may explain claim status but cannot initiate appeals.
 
 ---
 
@@ -88,7 +88,7 @@ Reasoning does not imply execution authority.
 - Only the orchestration + policy layers may *approve and execute* actions.
 
 **Example**
-An agent may request ìcreate caseî, but cannot create one directly.
+An agent may request ‚Äúcreate case‚Äù, but cannot create one directly.
 
 ---
 
