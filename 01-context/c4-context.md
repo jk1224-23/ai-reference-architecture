@@ -140,9 +140,10 @@ flowchart LR
     AIPlatform -->|Governed Tool Calls| CoreAdmin["Core Admin Systems"]
     AIPlatform -->|Read-only Queries| ProviderDir["Provider Directory"]
     AIPlatform -->|Case Creation| CaseMgmt["Case Management"]
-    AIPlatform -->|Policy Lookup (RAG)| KnowledgeStore["Policy & Knowledge Store"]
+    AIPlatform -->|Policy Lookup - RAG| KnowledgeStore["Policy & Knowledge Store"]
 
     AIPlatform -->|Audit Events| Audit["Audit / Compliance"]
+```
 
 ---
 
