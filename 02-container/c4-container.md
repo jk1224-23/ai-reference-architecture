@@ -218,7 +218,7 @@ flowchart TB
     D -->|Tool request| C
     C -->|Approved| E[Tool Registry & Execution]
     E --> F[Enterprise Systems of Record]
-    D <--> G[Knowledge Retrieval (RAG)]
+    D <--> G[Knowledge Retrieval -RAG]
     B --> H[Audit & Observability]
     C --> H
     E --> H
