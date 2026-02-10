@@ -208,12 +208,18 @@ flowchart TB
     Orchestrator --> Audit["Audit & Observability"]
     Policy --> Audit
     Tools --> Audit
-
+```
 ---
-
-## What to do now
-1. Save this file as `02-container/c4-container.md`
-2. Commit it:
-```bash
-git add 02-container/c4-container.md
-git commit -m "Add Article 2: C4 Container for AI Assistant Platform"
+```mermaid
+flowchart TB
+    A[Channel Adapters] --> B[Conversation Orchestrator]
+    B --> C[Policy & Guardrail Engine]
+    B --> D[AI Reasoning Layer]
+    D -->|Tool request| C
+    C -->|Approved| E[Tool Registry & Execution]
+    E --> F[Enterprise Systems of Record]
+    D <--> G[Knowledge Retrieval (RAG)]
+    B --> H[Audit & Observability]
+    C --> H
+    E --> H
+```
