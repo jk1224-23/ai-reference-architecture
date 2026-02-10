@@ -210,17 +210,4 @@ flowchart TB
     Tools --> Audit
 ```
 ---
-```mermaid
-flowchart TB
-    A[Channel Adapters] --> B[Conversation Orchestrator]
-    B --> C[Policy & Guardrail Engine]
-    B --> D[AI Reasoning Layer]
-    D -->|Tool request| C
-    C -->|Approved| E[Tool Registry & Execution]
-    E --> F[Enterprise Systems of Record]
-    D <--> G[Knowledge Retrieval -RAG]
-    B --> H[Audit & Observability]
-    C --> H
-    E --> H
-```
----
+
