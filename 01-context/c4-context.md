@@ -143,3 +143,60 @@ flowchart LR
     AIPlatform -->|Policy Lookup (RAG)| KnowledgeStore["Policy & Knowledge Store"]
 
     AIPlatform -->|Audit Events| Audit["Audit / Compliance"]
+
+---
+
+## Architectural implications
+
+The C4 Context defined above enforces the following architectural implications:
+
+- The AI Assistant Platform **cannot directly access enterprise systems** and must always operate through governed interfaces.
+- AI does not own or persist authoritative business data.
+- All AI-initiated actions must be attributable to an authenticated user role.
+- Human escalation is a **first-class architectural path**, not an exception.
+- Compliance and audit functions must be able to reconstruct AI interactions after the fact.
+
+These implications constrain all subsequent architectural and implementation decisions.
+
+---
+
+## Explicit non-goals
+
+This context explicitly does **not** support the following:
+
+- Automated coverage determinations or benefit approvals
+- Autonomous financial decisions affecting members or providers
+- Clinical interpretation or medical advice
+- Replacement of human agents in high-risk interactions
+- Model training or fine-tuning activities
+
+Excluding these goals is intentional and necessary to maintain safety, compliance, and accountability.
+
+---
+
+## Decision ownership and accountability
+
+| Decision area | Ownership |
+|--------------|-----------|
+| AI behavior policy and boundaries | Architecture / AI Governance |
+| Model selection and lifecycle | AI Platform Team |
+| Enterprise business rules | System-of-record owners |
+| Escalation thresholds | Operations / Contact Center |
+| Compliance and audit review | Risk & Compliance |
+
+Clear ownership is required to prevent ambiguity during incidents or regulatory review.
+
+---
+
+## Transition to container-level design
+
+With system boundaries and responsibilities established, the next step is to examine
+the **internal structure of the AI Assistant Platform**.
+
+The following article introduces the **C4 Container view**, explaining:
+- why each internal container exists
+- what risk it mitigates
+- what it is intentionally not responsible for
+
+All container-level decisions inherit the constraints defined in this context.
+
