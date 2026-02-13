@@ -25,6 +25,42 @@ Log what you need for audit and incident response, but minimize PHI:
 
 **Rule:** “Audit-first” does not mean “log everything forever.”
 
+---
+
+## Threat model (STRIDE-lite)
+
+This threat model focuses on the most common failure modes for **agentic assistants in regulated domains**. The goal is to map each threat to **concrete architectural controls** and **where they are enforced** (outside the LLM wherever possible).
+
+| Threat / attack pattern | Impact | Primary controls | Where enforced (component) | Evidence / telemetry |
+|---|---|---|---|---|
+| Prompt injection (user tries to override rules, force tool use, bypass policy) | Unauthorized actions, policy bypass, data leakage | Policy gate must be authoritative; intent classification; tool allowlists; deny-by-default for high-risk intents | Orchestrator + Policy/Guardrail Engine + Tool Registry | Policy deny logs, blocked-intent counters, jailbreak attempt signals, conversation trace |
+| Tool manipulation (model tries “creative” tool parameters, chaining, or hidden requests) | Data exfiltration or unintended side effects | Strict tool schemas; input validation; parameter allowlists; scoped tokens; output filtering | Tool Execution Layer + Policy Engine | Tool call audit (input/output hashes), validation failures, abnormal parameter patterns |
+| Data exfiltration via RAG (prompt asks for secrets/PHI “from docs”) | PHI/PII exposure, compliance breach | Data classification rules; RAG index must exclude PHI by default; retrieval filters; redaction on outputs | RAG Service + Policy Engine + Response Quality Gate | Retrieval logs, redaction events, PHI detection alerts, vector-store access audit |
+| Data exfiltration via tools (model requests broad “dump” queries) | PHI/PII exposure, over-collection | Least-privilege tool scopes; row/field-level access; query guardrails; purpose limitation | Tool Execution Layer + Downstream APIs | Tool query size metrics, denied queries, abnormal “wide” query detection |
+| Unauthorized tool access / privilege escalation (agent gains access to tools it shouldn’t) | Unauthorized transactions or data access | Deterministic allowlist mapping (intent → tools); RBAC; scoped credentials per tool call; no shared “god token” | Policy Engine + Tool Registry + IAM | Allowlist resolution logs, RBAC deny logs, token scope audit, privilege anomaly detection |
+| Identity spoofing / session hijack (replay tokens, impersonation, wrong member context) | Wrong-user disclosure, fraudulent actions | Strong auth (OIDC); session binding; step-up auth for high-risk; context confirmation for member-specific actions | Channel Adapters + Orchestrator + IAM | Auth events, step-up triggers, mismatch detection, session anomaly alerts |
+| Hallucination presented as transactional truth (“claim is approved” without SoR evidence) | Misleading decisions, member harm, compliance risk | “No SoR truth without tools” rule; evidence-first response assembly; citations and tool provenance; refusal when evidence missing | Orchestrator + Response Assembly + Quality Gate | Evidence completeness score, hallucination flags, “no-evidence response” blocks, QA sampling results |
+| PHI leakage in responses (model includes sensitive data unintentionally) | Compliance breach | Pre/post redaction; PHI detectors; response templates that minimize exposure; safe summaries; logging redaction | Quality Gate + Policy Engine + Observability | PHI redaction counts, blocked responses, sampling audits, incident triggers |
+| PHI leakage in logs/traces (telemetry captures raw PHI) | Compliance breach, retention violations | Log minimization; tokenization/hashing; separate secure audit store; retention policies; access controls | Observability Pipeline + Audit Store | Field-level redaction metrics, audit access logs, retention enforcement reports |
+| Denial of service (token floods, tool burst storms, retries) | Outages, degraded service | Rate limiting; circuit breakers; queueing; retries with backoff; per-user/per-channel quotas | Channel Adapters + Orchestrator + Tool Execution | Rate-limit metrics, queue depth, tool timeout rates, circuit breaker events |
+| Supply-chain / drift (model/provider change, prompt edits, tool version changes) | Behavior regressions, new failure modes | Change control; versioned prompts/tools; canary releases; rollback; evaluation gates before promotion | Operating Model + Evaluation + Tool Registry | Release gate results, drift detection, rollback events, change audit trail |
+
+### Security validation checklist (minimum bar)
+Use this checklist as the “definition of done” for security controls:
+
+- Tool execution is **deny-by-default** and only allowed through a **deterministic allowlist** (intent → tools).
+- All tool calls use **scoped credentials** (least privilege) with short-lived tokens where possible.
+- Tool inputs are **schema-validated** and parameter-guarded (reject broad queries / unsafe params).
+- High-risk intents (appeals, grievances, updates, financial actions) are **blocked or HITL-gated** by policy.
+- Responses cannot assert systems-of-record truth **without tool evidence** (enforced outside the model).
+- PHI/PII protection is enforced via **pre/post redaction** and **response quality gates**.
+- Logs/traces do not persist raw PHI by default (redaction/minimization + controlled audit store).
+- Rate limits, circuit breakers, and backoff exist for both LLM calls and downstream tools.
+- Security telemetry is monitored (policy denies, jailbreak attempts, redaction spikes, tool anomalies).
+- Changes to prompts, tools, and policies require review + release gates (evaluation + canary + rollback).
+
+---
+
 
 ## Why this document exists
 In healthcare environments, AI failures are not evaluated by sophistication or intent.
