@@ -13,7 +13,14 @@ def utc_now_iso() -> str:
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
 
-def handle_request(message: str, channel: str, user_role: str, user_id: str, session_id: str, approval_id: str | None = None):
+def handle_request(
+    message: str,
+    channel: str,
+    user_role: str,
+    user_id: str,
+    session_id: str,
+    approval_id: str | None = None,
+):
     correlation_id = f"c-{uuid.uuid4().hex[:8]}"
     request_id = f"r-{uuid.uuid4().hex[:8]}"
     timestamp = utc_now_iso()
@@ -49,7 +56,6 @@ def handle_request(message: str, channel: str, user_role: str, user_id: str, ses
                         "subject": "Appeal request",
                         "description": message,
                         "claimId": claim_id,
-                        # approvalId added by executor when available
                     },
                 }
             )
@@ -93,13 +99,13 @@ def handle_request(message: str, channel: str, user_role: str, user_id: str, ses
             "reasons": policy_result.get("reasons", []),
             "allowedTools": policy_result.get("allowedTools", []),
             "hitlRequired": bool(policy_result.get("hitlRequired", False)),
+            "killSwitchesActive": policy_result.get("killSwitchesActive", []),
         },
         "toolCalls": tool_calls,
         "outcome": {
             "responseType": response["responseType"],
-            "responseSummary": response["responseSummary"],
+            "responseSummary": response.get("responseSummary", ""),
             "citations": response.get("citations", []),
-            "killSwitchesActive": policy_result.get("killSwitchesActive", []),
         },
     }
 
@@ -110,9 +116,19 @@ def handle_request(message: str, channel: str, user_role: str, user_id: str, ses
 
     return {
         "correlationId": correlation_id,
-        "policyDecision": policy_result["decision"],
-        "responseType": response["responseType"],
-        "message": response["message"],
+        "intent": audit_event["intent"],
+        "policy": audit_event["policy"],
+        "toolCalls": tool_calls,
+        "response": {
+            "message": response["message"],
+            "responseType": response["responseType"],
+            "responseSummary": response.get("responseSummary", ""),
+        },
+        "audit": {
+            "correlationId": correlation_id,
+            "requestId": request_id,
+            "timestamp": timestamp,
+        },
     }
 
 
