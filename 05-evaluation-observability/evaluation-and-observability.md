@@ -3,8 +3,6 @@
 
 ---
 
----
-
 ## Operational metrics (what you must measure)
 
 ### Golden signals (platform)

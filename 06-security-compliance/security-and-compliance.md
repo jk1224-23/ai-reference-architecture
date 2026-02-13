@@ -3,8 +3,6 @@
 
 ---
 
----
-
 ## Security model clarity (identity, least privilege, retention)
 
 ### Identity: user vs agent vs tool

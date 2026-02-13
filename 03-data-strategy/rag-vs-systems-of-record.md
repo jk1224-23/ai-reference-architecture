@@ -3,8 +3,6 @@
 
 ---
 
----
-
 ## Decision table: RAG vs Tools (KB vs Systems of Record)
 
 | Need | Use RAG / KB Retrieval | Use Tool (System-of-Record access) | Notes |
