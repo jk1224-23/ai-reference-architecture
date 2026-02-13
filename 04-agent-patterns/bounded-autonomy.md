@@ -135,3 +135,20 @@ flowchart LR
     Tools --> Systems
     Orchestrator --> Human
 ```
+
+---
+
+## Tool allowlist rules (example)
+Tool access must be enforced **outside the LLM** via a deterministic mapping.
+
+| Intent category | Allowed tools | Approval required | Notes |
+|---|---|---:|---|
+| Policy / benefits explanation | RAG / KB search only | No | No SoR calls; cite sources |
+| Claim status lookup | Claims Read API | No (if policy allows) | Read-only; must show evidence |
+| Eligibility verification | Eligibility Read API | No (if policy allows) | Read-only; PHI controls still apply |
+| Create case / ticket | Case Create API | Yes | Guarded execution (HITL) |
+| Appeal / grievance | None directly | Yes (mandatory) | Always HITL; supervised response |
+| Update member data | None directly | Yes (mandatory) | High risk; dual-control recommended |
+| Payment / financial action | None directly | Yes (mandatory) | Block by default |
+
+**Enforcement rule:** if an intent has no allowlisted tool, the orchestrator must block execution and escalate.
