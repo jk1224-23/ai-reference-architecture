@@ -216,5 +216,29 @@ Tool access must be enforced **outside the LLM** via a deterministic mapping.
 **Enforcement rule:** if an intent has no allowlisted tool, the orchestrator must block execution and escalate.
 
 Tool execution follows the platform Tool Contract Standard (see `02-container/c4-container.md`).
+---
 
+## Tool allowlist policy (authoritative example)
+
+Tool use is governed by a deterministic allowlist. The assistant can propose tool use, but the platform enforces the mapping **outside the LLM**.
+
+| Intent category | Risk tier | Allowed tools | Approval required | Notes |
+|---|---:|---|---:|---|
+| Policy / benefits explanation | Low | KB/RAG only | No | Explanatory only; cite sources |
+| General FAQ (non-member specific) | Low | KB/RAG only | No | No SoR access |
+| Claim status lookup | Medium | Claims Read API | No (if policy allows) | Read-only; evidence required |
+| Eligibility verification | Medium | Eligibility Read API | No (if policy allows) | Read-only; minimal fields |
+| Provider search / directory | Low/Med | Provider Directory API | No | Prefer minimal disclosure |
+| Create case / service request | High | Case Create API | **Yes (HITL)** | Requires approval binding (`approvalId`) |
+| Appeal / grievance initiation | High | None directly (or Case Create with HITL) | **Yes (HITL)** | Supervised response required |
+| Update member demographics | High | Member Update API (if allowed) | **Yes (HITL)** | Step-up auth + justification |
+| Payment / financial action | High | None by default | **Yes (mandatory)** | Block by default unless explicitly approved |
+| Anything not mapped | — | None | — | Deny-by-default → clarify or escalate |
+
+**Enforcement rules**
+- If the intent has no allowlisted tool, the orchestrator must **block tool execution** and either ask clarifying questions or **escalate**.
+- Transactional tools must support approval binding and idempotency controls.
+- Read-only tools must still enforce least privilege and data minimization.
+
+---
 

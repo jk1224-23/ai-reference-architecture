@@ -84,6 +84,53 @@ Channel-specific logic must not leak into AI behavior.
 
 ---
 
+## Channel considerations (voice vs chat)
+
+Voice and chat share the same core platform, but user expectations and risk controls differ. The architecture treats the channel as an input/output adapter while enforcing consistent policy and audit controls.
+
+### 1) Latency expectations and progressive responses
+- **Chat:** users tolerate longer responses when tool-backed; responses can be structured and cite sources.
+- **Voice:** users expect fast acknowledgement. The system should support:
+  - immediate acknowledgement within ~1–2 seconds
+  - progressive updates (“Let me check that…”, “Still working…”) when tools are slow
+  - safe fallback messaging when timeouts occur
+
+**Platform implication:** the orchestrator should support asynchronous tool calls and progressive response assembly for voice.
+
+### 2) Confirmation patterns (reduce high-risk mistakes)
+Voice channels are more error-prone (ASR/STT errors). For medium/high-risk actions:
+- require explicit confirmation (“Did you mean claim 12345?”)
+- repeat back key entities (claimId, date range) before tool execution
+- use HITL gating for high-risk intents as defined by policy
+
+**Platform implication:** entity confirmation steps are modeled as workflow states, not ad-hoc prompt text.
+
+### 3) STT/ASR error handling and ambiguity controls
+- treat low-confidence transcripts as **ambiguous** and trigger:
+  - clarification questions
+  - fallback to chat (send link) or HITL when needed
+- log transcript confidence as an input to risk tiering and escalation
+
+### 4) Privacy and environment risks (voice-specific)
+Voice interactions may occur in non-private environments:
+- avoid reading sensitive details aloud by default
+- provide “privacy-safe” summaries unless the user explicitly requests details and is authenticated
+- prefer sending sensitive details to chat or secure portal links (where applicable)
+
+### 5) Audit and trace consistency
+Both channels must produce consistent traces:
+- intent + confidence
+- policy allow/deny + reasons
+- tool calls and outcomes
+- escalation/HITL events
+- final response
+
+### 6) Safe defaults
+- For voice, default to **minimal disclosure** and **confirmation-first** for member-specific information.
+- For chat, default to **evidence-first** and **cited explanations**.
+
+---
+
 ### 2. Conversation Orchestrator
 **Why this exists**  
 AI assistants must make decisions across multiple steps while preserving context, state, and control boundaries.

@@ -67,6 +67,20 @@ Define minimum expectations:
 - **Stale content protection:** prefer content with effective/last-updated metadata
 - **Deprecation handling:** expired policies must be removed or deprioritized automatically
 
+### Freshness and deprecation rules (minimum)
+
+To prevent stale or incorrect guidance from being “amplified” by RAG:
+
+- **Every KB item must carry metadata:** `source`, `owner`, `effectiveDate`, `lastReviewedDate`, and (when applicable) `expiryDate`.
+- **Expiry-aware retrieval:** content past `expiryDate` must be excluded (or heavily down-ranked) by retrieval filters.
+- **Review cadence:** high-impact policy sources must be reviewed on a defined schedule (e.g., quarterly) and re-indexed after review.
+- **Staleness warnings:** if a user asks about a topic where the newest content is older than a threshold, the assistant should:
+  - indicate potential staleness, and/or
+  - prefer escalation/HITL for high-risk interpretations.
+- **Deprecation process:** deprecated/incorrect articles must be:
+  1) removed from retrieval immediately (kill switch),
+  2) tracked with an audit record (who/when/why),
+  3) replaced with corrected content and re-indexed.
 ### 6) Retrieval controls (prevent unsafe grounding)
 - Source allowlists (only approved sources retrievable for specific intents)
 - Metadata filters (classification, effective date, version)
@@ -94,7 +108,101 @@ See also:
 - `02-container/c4-container.md` (Tool contract standard and execution controls)
 - `06-security-compliance/security-and-compliance.md` (Threat model and OWASP alignment)
 
----`r`n`r`n## Why this document exists
+---`r`n`r`n---
+
+## Knowledge base (KB) governance and lifecycle
+
+RAG is only as trustworthy as the knowledge sources behind it. In regulated domains, the KB must be treated as a governed asset with clear ownership, freshness expectations, and emergency removal controls.
+
+### 1) Approved source types (examples)
+KB content must come from approved systems, such as:
+- official policy documents (PDFs, controlled wikis)
+- standard operating procedures (SOPs)
+- provider/member-facing FAQs
+- internal runbooks and knowledge articles
+
+**Non-approved by default**
+- ad-hoc notes, personal docs, unreviewed content
+- scraped web content without explicit approval
+
+### 2) Data classification rules (what is allowed in KB)
+- **PHI is excluded by default** from KB and vector stores.
+- KB is intended for **explanatory knowledge**, not member-specific data.
+- If any exception is required (rare), it must be explicitly approved with:
+  - documented purpose
+  - restricted audience
+  - encryption and access controls
+  - retention limits
+  - retrieval filters that prevent broad exposure
+
+### 3) Ownership and approvals
+Define ownership explicitly:
+- **Data Steward:** accountable for KB quality, source approvals, metadata standards
+- **Security/Compliance:** approves classification rules and any PHI-related exceptions
+- **Platform Owner:** responsible for ingestion pipeline, retrieval controls, and auditability
+
+**Approval gate**
+- No new KB source enters production RAG without a documented approval (PR/record).
+
+### 4) Ingestion pipeline (controlled steps)
+A standard pipeline should include:
+1. Source acquisition (from approved repository)
+2. Content normalization (format cleanup, removal of sensitive fields if present)
+3. Chunking strategy (consistent chunk sizes, stable boundaries)
+4. Metadata enrichment (source, version, owner, classification, effective dates)
+5. Embedding generation
+6. Index publish to vector store
+7. Verification checks (spot sampling, retrieval tests, citation validation)
+
+### 5) Freshness, re-indexing, and “staleness” control
+Define minimum expectations:
+- **Freshness SLA:** how quickly updates must be reflected (e.g., within X days/hours)
+- **Re-index cadence:** scheduled refresh for key sources (weekly/monthly)
+- **Stale content protection:** prefer content with effective/last-updated metadata
+- **Deprecation handling:** expired policies must be removed or deprioritized automatically
+
+### Freshness and deprecation rules (minimum)
+
+To prevent stale or incorrect guidance from being “amplified” by RAG:
+
+- **Every KB item must carry metadata:** `source`, `owner`, `effectiveDate`, `lastReviewedDate`, and (when applicable) `expiryDate`.
+- **Expiry-aware retrieval:** content past `expiryDate` must be excluded (or heavily down-ranked) by retrieval filters.
+- **Review cadence:** high-impact policy sources must be reviewed on a defined schedule (e.g., quarterly) and re-indexed after review.
+- **Staleness warnings:** if a user asks about a topic where the newest content is older than a threshold, the assistant should:
+  - indicate potential staleness, and/or
+  - prefer escalation/HITL for high-risk interpretations.
+- **Deprecation process:** deprecated/incorrect articles must be:
+  1) removed from retrieval immediately (kill switch),
+  2) tracked with an audit record (who/when/why),
+  3) replaced with corrected content and re-indexed.
+### 6) Retrieval controls (prevent unsafe grounding)
+- Source allowlists (only approved sources retrievable for specific intents)
+- Metadata filters (classification, effective date, version)
+- Query safety filters (block prompts that request sensitive content)
+- Citation requirement (responses cite KB sources where applicable)
+
+### 7) Emergency response: KB “kill switch”
+If content is found to be incorrect, sensitive, or unsafe:
+- The platform must support immediate removal or disabling of:
+  - a specific document
+  - an entire source collection
+  - retrieval for a specific intent category
+- All removals must be auditable (who removed, when, why)
+
+### 8) Definition of done (KB governance)
+KB is “production-ready” only when:
+- sources are approved and owned
+- classification rules are defined and enforced
+- ingestion steps and metadata are standardized
+- freshness/re-index expectations are documented
+- retrieval filters and citations are working
+- emergency kill switch exists and is tested
+
+See also:
+- `02-container/c4-container.md` (Tool contract standard and execution controls)
+- `06-security-compliance/security-and-compliance.md` (Threat model and OWASP alignment)
+
+---## Why this document exists
 Most AI assistant failures in healthcare are incorrectly labeled as â€œhallucination problemsâ€.
 
 In reality, they are **data trust problems**.
@@ -290,5 +398,7 @@ The following article introduces **agent patterns**, explaining:
 - how humans remain in control
 
 These patterns build directly on the data rules defined here.
+
+
 
 

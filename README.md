@@ -1,4 +1,4 @@
-# AI Reference Architecture — Healthcare Voice & Chat Assistant
+﻿# AI Reference Architecture â€” Healthcare Voice & Chat Assistant
 
 This repository provides a **practical, enterprise-ready reference architecture** for building a regulated-domain AI assistant (voice + chat) with **governed agent behavior**, **tool-based system access**, **RAG for explanatory knowledge**, and **audit-first observability**.
 
@@ -25,24 +25,27 @@ This repository provides a **practical, enterprise-ready reference architecture*
 12. **Security & compliance:** [06-security-compliance/security-and-compliance.md](./06-security-compliance/security-and-compliance.md)
 13. **Operating model & change:** [07-operating-model/operating-model-and-change.md](./07-operating-model/operating-model-and-change.md)
 
-## Repository structure
-- `00-overview/` — scope, non-goals, principles
-- `01-context/` — C4 Context diagram and boundaries
-- `02-container/` — C4 Container diagram and platform building blocks
-- `03-data-strategy/` — RAG vs Systems of Record stance and governance
-- `04-agent-patterns/` — bounded autonomy, planner–executor, HITL controls
-- `05-evaluation-observability/` — quality, monitoring, tracing, evaluation
-- `06-security-compliance/` — PHI controls, RBAC, auditing, retention, threat model
-- `07-operating-model/` — rollout, enablement, change management, ownership
+* **Interview kit:** `08-interview-kit/5-slide-deck-script.md`
+* **Reference implementation plan:** `reference-implementation/README.md`
 
-## What’s NOT in scope (non-goals)
+## Repository structure
+- `00-overview/` â€” scope, non-goals, principles
+- `01-context/` â€” C4 Context diagram and boundaries
+- `02-container/` â€” C4 Container diagram and platform building blocks
+- `03-data-strategy/` â€” RAG vs Systems of Record stance and governance
+- `04-agent-patterns/` â€” bounded autonomy, plannerâ€“executor, HITL controls
+- `05-evaluation-observability/` â€” quality, monitoring, tracing, evaluation
+- `06-security-compliance/` â€” PHI controls, RBAC, auditing, retention, threat model
+- `07-operating-model/` â€” rollout, enablement, change management, ownership
+
+## Whatâ€™s NOT in scope (non-goals)
 - Replacing systems-of-record or becoming a transactional source of truth
 - Allowing autonomous high-risk actions without explicit approval
 - Storing PHI in vector stores (unless explicitly approved and controlled)
 - Building a full workflow engine (the assistant integrates with existing workflows)
 
 ## Design stance (in one paragraph)
-The assistant is **not** a system-of-record and does **not** “do things by itself.” It proposes actions, but **policy gates and allowlisted tools** control execution; **RAG is used for explanatory knowledge**; and **human escalation** is mandatory for high-risk intents. Every decision is **traceable and auditable**.
+The assistant is **not** a system-of-record and does **not** â€œdo things by itself.â€ It proposes actions, but **policy gates and allowlisted tools** control execution; **RAG is used for explanatory knowledge**; and **human escalation** is mandatory for high-risk intents. Every decision is **traceable and auditable**.
 
 ## Production-ready (minimum bar)
 - Tool access is allowlisted and enforced outside the LLM
@@ -50,3 +53,4 @@ The assistant is **not** a system-of-record and does **not** “do things by its
 - Prompts, tool calls, and policy decisions are trace-logged for audit
 - Safety controls exist (PII/PHI redaction, jailbreak detection, policy denies)
 - Evaluation and operational metrics are defined and monitored (SLOs + guardrail signals)
+
