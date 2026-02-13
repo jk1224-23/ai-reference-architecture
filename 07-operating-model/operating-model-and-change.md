@@ -47,6 +47,54 @@ This principle governs all operational decisions.
 
 ---
 
+## Ownership model and RACI (enterprise minimum)
+
+An AI assistant platform fails in production when ownership is ambiguous. This section defines **who owns what** across prompts, tools, policies, evaluation, and incident response.
+
+### Roles (used in the RACI)
+- **Product Owner (PO):** defines business outcomes, approves user experience and “what the assistant is allowed to do”
+- **Platform Owner (Platform):** owns orchestration, policy enforcement, tool registry, platform reliability
+- **Security/Compliance (Sec/Comp):** owns PHI rules, retention requirements, audit expectations, risk sign-off
+- **Data Steward (Data):** owns data classification, knowledge sources, vector store governance, access rules
+- **Tool Owner (Tool):** owns each downstream tool/API contract, permissions, and reliability
+- **SRE/Observability (SRE):** owns monitoring, incident response mechanics, on-call readiness, SLO reporting
+
+### RACI table
+| Activity | PO | Platform | Sec/Comp | Data | Tool | SRE |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|
+| Define intent catalog (what the assistant supports) | **A** | **R** | C | C | C | C |
+| Add/modify prompts (prompt library changes) | A | **R** | C | C | C | I |
+| Add/modify policy rules (guardrails, HITL gates) | C | **R** | **A** | C | C | I |
+| Onboard a new tool/API into registry | I | **R** | C | C | **A/R** | C |
+| Change tool permissions / scopes | I | C | **A** | C | **R** | I |
+| Knowledge source onboarding (KB/docs) | I | C | C | **A/R** | I | I |
+| Vector store configuration + retrieval filters | I | **R** | **A** | **R** | I | I |
+| Offline evaluation dataset maintenance (golden sets) | C | **R** | C | **R** | C | I |
+| Release gates definition (quality + safety) | C | **R** | **A** | C | C | **R** |
+| Model upgrade / prompt major version release | A | **R** | **A** | C | C | **R** |
+| Canary rollout + rollback decision | I | C | C | I | C | **A/R** |
+| Incident response: PHI leak or policy bypass | I | **R** | **A** | C | C | **R** |
+| Incident response: tool outage / degradation | I | C | I | I | **R** | **A/R** |
+| Post-incident review + corrective actions | C | **R** | **A** | C | C | **R** |
+
+Legend: **R** = Responsible, **A** = Accountable, **C** = Consulted, **I** = Informed
+
+### Approval path (recommended default)
+For any change that affects safety, compliance, or execution authority:
+1. Change is proposed via PR (prompt/tool/policy/eval update)
+2. Automated checks run (lint + evaluation gates + safety suite where applicable)
+3. Required approvals are enforced (Platform + Sec/Comp + Tool Owner as needed)
+4. Deploy via canary with monitored thresholds
+5. Rollback/degrade automatically if guardrail triggers fire
+
+### “Stop-the-line” authority
+Any of the following parties can halt release or require rollback:
+- **Security/Compliance** for PHI or policy violations
+- **SRE** for SLO or stability breaches
+- **Platform Owner** for tool misuse / governance failures
+
+---
+
 ## Operating responsibilities (WHY-driven)
 
 ### AI Platform Ownership
