@@ -95,6 +95,75 @@ Any of the following parties can halt release or require rollback:
 
 ---
 
+## Change lifecycle and versioning (prompts, tools, policies, models)
+
+AI assistants change over time. Without disciplined change control, small edits can cause:
+- behavior regressions
+- policy bypasses
+- compliance issues (PHI exposure)
+- broken tools and silent failures
+
+This architecture treats prompts, policies, tools, and models as **versioned enterprise assets**.
+
+### What is versioned
+- **Prompt templates and system instructions** (prompt library)
+- **Policy rules** (intent allow/deny, HITL requirements, PHI controls)
+- **Tool registry entries** (tool schemas, permissions, rate limits, fallbacks)
+- **Model configuration** (provider, model name/version, safety settings, routing)
+- **Evaluation assets** (golden conversation sets, red-team suites, scoring thresholds)
+
+### Change categories (and how strict they are)
+| Change type | Examples | Risk level | Required gates / approvals |
+|---|---|---:|---|
+| Cosmetic | wording, formatting, comments | Low | Platform review |
+| Prompt behavior change | new instructions, tone rules, new response structure | Medium | Platform + evaluation regression gate |
+| Policy change | HITL thresholds, allowlist mapping, PHI rules | High | Platform + **Security/Compliance** + safety suite |
+| Tool change | new tool, schema change, new permissions/scope | High | Platform + Tool Owner + Security (if scope changes) |
+| Model change | new model/provider, routing changes | High | Platform + SRE + Security + canary + rollback plan |
+| Data source change | KB additions, retrieval filters, embedding pipeline updates | Medium/High | Data Steward + Platform + safety checks |
+
+### Required pipeline gates (minimum)
+**Pre-merge (PR level)**
+- Tool schema validation (no breaking changes without version bump)
+- Policy unit tests (deny-by-default not bypassed)
+- Prompt regression tests on golden scenarios
+- Static checks for prohibited patterns (e.g., “always call tool X”)
+
+**Pre-release (promotion level)**
+- Offline evaluation against golden set (quality targets met)
+- Red-team suite (prompt injection / jailbreak / PHI leakage)
+- Tool reliability tests (timeouts, partial failures, retries/backoff)
+- Canary rollout plan defined (metrics + rollback thresholds)
+
+**Post-release (runtime)**
+- Guardrail dashboards monitored (deny rate, escalation rate, tool failure rate, redaction events)
+- Drift detection (unexpected shifts in intent mix or response behavior)
+- Automated rollback/degrade triggers enabled
+
+### Compatibility rules (avoid breaking prod)
+- **Tools:** schema changes must be backward compatible, or shipped as a new version (e.g., `claimsLookup:v2`).
+- **Policies:** must remain deterministic; policy decisions must be reproducible and logged.
+- **Prompts:** major prompt changes require a version bump and regression run.
+- **Models:** treat as “runtime dependency” — always deploy with canary + rollback.
+
+### Rollback and degrade strategy (default)
+When safety or reliability degrades:
+1. **Degrade to KB-only mode (RAG-only)** for safe explanatory responses.
+2. **Force HITL-first** for transactional or ambiguous intents.
+3. **Block known-abused intents** temporarily until patched.
+4. Roll back prompt/model/tool version to last known-good.
+
+### Change record requirements (audit-friendly)
+For any high-risk change, capture:
+- what changed (prompt/policy/tool/model version)
+- who approved (roles)
+- evaluation results (golden + safety)
+- rollout method (canary % and duration)
+- observed impact (metrics deltas)
+- rollback plan and whether it was used
+
+---
+
 ## Operating responsibilities (WHY-driven)
 
 ### AI Platform Ownership
