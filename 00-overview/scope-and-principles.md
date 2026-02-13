@@ -142,6 +142,60 @@ When tradeoffs exist:
 
 ---
 
+## Non-functional requirements (NFRs) — measurable targets (starter)
+
+This reference architecture is designed for regulated-domain assistants where **safety, auditability, and reliability** are as important as usability. The targets below are starter values; teams should tune them based on channel (voice vs chat), risk profile, and downstream system constraints.
+
+### Availability and resilience
+- **Platform availability:** target **99.9%+** for the orchestration/control plane (excluding downstream tool/system outages).
+- **Degraded mode availability:** when tools are down, the assistant must still provide **KB-only** support for low-risk intents (where allowed).
+- **Graceful degradation:** tool failures should not cascade into total outage; enforce circuit breakers and fallbacks.
+
+### Latency (user experience)
+Latency targets should be defined per channel:
+- **Chat response time (P95):** target **≤ 3–5 seconds** for low-risk, KB-only queries.
+- **Tool-backed queries (P95):** target **≤ 8–12 seconds** where downstream systems permit.
+- **Voice turn latency (P95):** target **≤ 1.5–2.5 seconds** for acknowledgement + progressive responses (even if tool completion takes longer).
+- **Timeout behavior:** if tool execution exceeds threshold, respond with a safe fallback (HITL or “we can’t complete this right now”).
+
+### Reliability (correctness + tool health)
+- **Tool execution success rate (P95 rolling window):** target **≥ 99%** for critical read-only tools; define per-tool baselines.
+- **Tool failure handling:** retries must use backoff and be capped; circuit breakers must trip under sustained failure.
+- **Evidence-first rule:** the assistant must not assert systems-of-record truth without tool evidence (enforced outside the LLM).
+
+### Safety and compliance (PHI/PII)
+- **PHI/PII leakage:** target **0 confirmed leaks** in user-visible responses (SEV0).
+- **Redaction coverage:** PHI/PII detection + redaction must run for all responses that may contain sensitive data.
+- **High-risk intents:** must be blocked or HITL-gated by policy (appeals, disputes, member-data updates, financial actions).
+- **Policy bypass:** target **0 bypass incidents** (tool calls without allowlist approval).
+
+### Auditability and traceability
+- **Trace completeness:** target **≥ 99%** of interactions produce an auditable trace including:
+  - intent classification outcome
+  - policy decisions (allow/deny + reason)
+  - tool calls (metadata and permitted payload references)
+  - escalation events and human approvals
+- **Reproducibility:** policy decisions must be deterministic and explainable from logged inputs.
+
+### Data retention and privacy (starter stance)
+Retention must be explicitly defined and enforced:
+- **Conversation content retention:** keep minimal content needed for support/evaluation, per policy (e.g., **30–90 days**), with secure access controls.
+- **Audit logs:** retain longer (e.g., **1–7 years**) as required by compliance, but minimize sensitive payload storage.
+- **Vector store content:** exclude PHI by default; allow only approved sources and enforce retrieval filters.
+
+### Rate limits and cost control
+- **Per-user rate limits:** enforce per-channel quotas to prevent abuse and protect downstream tools.
+- **Max tool calls per turn:** cap tool calls and plan depth to prevent runaway loops.
+- **Token/cost budgets:** define per-interaction and per-session ceilings; degrade to safer modes when budgets are exceeded.
+
+### Quality targets (evaluation)
+- Maintain a “golden set” of scenarios and require:
+  - **no regressions** in critical flows (member safety/compliance)
+  - monitored thresholds for accuracy/helpfulness on allowed intents
+  - regular red-team testing for prompt injection and tool misuse
+
+---
+
 ## How to read the rest of this repository
 Each subsequent document will:
 1. Identify a concrete problem
