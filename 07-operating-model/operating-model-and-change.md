@@ -164,6 +164,123 @@ For any high-risk change, capture:
 
 ---
 
+## Incident playbooks (enterprise minimum)
+
+Agentic systems need **predefined playbooks** because failures can be fast, high-impact, and hard to debug without a repeatable process.
+
+### Severity model (simple)
+- **SEV0:** confirmed PHI leak, policy bypass, unauthorized tool execution, or active exploitation
+- **SEV1:** strong indicators of leak/bypass risk, major outage, widespread wrong answers in critical flows
+- **SEV2:** degraded tool reliability, evaluation regressions without confirmed compliance impact
+
+### Global “kill switches” (must exist)
+- **KB-only mode (RAG-only):** disable all transactional tools
+- **HITL-first mode:** require human approval for all non-trivial intents
+- **Intent blocklist:** temporarily block specific risky intents (appeals, updates, payments)
+- **Tool circuit breakers:** disable a single tool causing cascading failure
+- **Model/prompt rollback:** revert to last known-good versions
+
+---
+
+### Playbook 1 — Confirmed PHI/PII leak in user response (SEV0)
+**Trigger**
+- Confirmed PHI/PII exposure in an outbound response or export
+
+**Immediate actions (first 15 minutes)**
+1. Activate **KB-only mode** (disable transactional tools)
+2. Enable **HITL-first mode** for member-specific flows
+3. Stop/rollback the latest prompt/model/tool release (if recent change)
+4. Preserve evidence: traces, prompts, tool calls, and policy decisions (secure audit store)
+
+**Containment**
+- Identify the leak source:
+  - RAG retrieval (index contains sensitive content)
+  - tool output exposure
+  - logging/telemetry exposure
+- Apply targeted blocks (intent/tool) until root cause is confirmed
+
+**Recovery**
+- Patch the control that failed (redaction rule, retrieval filter, allowlist policy)
+- Run safety suite + PHI leak tests before re-enabling tools
+- Re-enable gradually with canary and strict monitoring
+
+**Post-incident**
+- Compliance review + notification workflow (per org policy)
+- Update evaluation sets with the exploit pattern
+- Add guardrail alerting for recurrence (redaction spikes, retrieval anomalies)
+
+---
+
+### Playbook 2 — Policy bypass or unauthorized tool execution (SEV0)
+**Trigger**
+- Tool call executed without allowlist approval, or action taken outside intended scope
+
+**Immediate actions**
+1. Disable the affected tool(s) via **tool circuit breaker**
+2. Roll back the change that introduced bypass (prompt/policy/tool version)
+3. Rotate scoped credentials / tokens if any exposure suspected
+
+**Investigation**
+- Confirm which layer failed:
+  - allowlist mapping bug
+  - policy engine enforcement gap
+  - tool executor accepted unvalidated params
+  - identity scope too broad
+
+**Recovery**
+- Fix the enforcement gap (deny-by-default + deterministic allowlist)
+- Add unit tests that reproduce the bypass attempt
+- Re-release via canary with increased monitoring of allow/deny decisions
+
+---
+
+### Playbook 3 — Prompt injection / goal hijack spike (SEV1 → SEV0 if successful)
+**Trigger**
+- Surge in jailbreak attempts, policy denies, or suspicious tool requests
+
+**Immediate actions**
+1. Tighten policy thresholds (more aggressive deny + escalate)
+2. Block known attack patterns (intent blocklist + input filters)
+3. Force **HITL-first** for affected intent categories
+
+**Recovery**
+- Patch vulnerable instruction patterns (prompt hardening)
+- Add new attack patterns to red-team suite and regression tests
+
+---
+
+### Playbook 4 — Tool outage or downstream degradation (SEV1/SEV2)
+**Trigger**
+- Tool timeouts, error rates, or latency breaches sustained
+
+**Immediate actions**
+1. Enable **degrade strategy**:
+   - KB-only for explanatory flows
+   - HITL-first for transactional intents
+2. Trip tool circuit breaker and stop runaway retries
+
+**Recovery**
+- Restore tool health or switch to alternative tool endpoint
+- Validate fallback messaging (“we can’t complete this action right now…”)
+- Re-enable gradually with canary
+
+---
+
+### Playbook 5 — Cascading failures / runaway agent loops (SEV1)
+**Trigger**
+- Repeated tool calls, growing trace depth, exploding latency/cost, queue buildup
+
+**Immediate actions**
+1. Apply caps: max tool calls per turn, max plan depth, max tokens per session
+2. Enable circuit breaker for repeated failure patterns
+3. Shift to KB-only / HITL-first mode temporarily
+
+**Recovery**
+- Fix orchestration logic (timeouts, backoff, loop detection)
+- Add regression tests for “runaway loop” scenarios
+
+---
+
 ## Operating responsibilities (WHY-driven)
 
 ### AI Platform Ownership

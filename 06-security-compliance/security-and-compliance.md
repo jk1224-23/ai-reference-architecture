@@ -61,6 +61,31 @@ Use this checklist as the “definition of done” for security controls:
 
 ---
 
+## Alignment with OWASP Top 10 for Agentic Applications (2026)
+
+This architecture's controls align to the OWASP Agentic Top 10 (2026) risk themes for autonomous/tool-using AI systems, including prompt injection/goal hijack protection, tool misuse prevention, identity and privilege controls, supply-chain/change drift controls, and safeguards against runaway loops and trust exploitation.
+
+Reference: OWASP Top 10 for Agentic Applications for 2026.
+
+### Quick mapping (architecture controls ↔ OWASP Agentic Top 10 2026)
+
+| OWASP Agentic risk theme (ASI) | How this architecture addresses it |
+|---|---|
+| Goal hijack / prompt injection | Policy gates, deny-by-default, intent classification, HITL escalation, audit traces |
+| Tool misuse | Deterministic tool allowlists, strict schemas, scoped tokens, parameter validation, circuit breakers |
+| Identity & privilege abuse | OIDC/session binding, RBAC, least privilege per tool call, step-up auth for high-risk |
+| Supply chain & change drift | Versioning for prompts/tools/models, release gates, canary rollout, rollback plans |
+| Unexpected unsafe actions | No direct execution outside tool registry; restricted tool surface; approvals for high-risk actions |
+| Memory/context poisoning | Controlled context sources, retrieval filters, red-team tests, trace-based audits |
+| Insecure inter-agent communication | Authenticated channels, structured messages, trace logging, policy enforcement between agents |
+| Cascading failures / runaway loops | Caps (max tool calls/tokens), retries/backoff, circuit breakers, degrade modes |
+| Human trust exploitation | HITL handoff contract, evidence bundles, approvals with justification, change tracking |
+| Rogue agent risk | Bounded autonomy, kill switches (KB-only/HITL-first), strict enforcement, continuous monitoring |
+
+Exact OWASP ASI labels may evolve; this mapping is maintained as guidance.
+
+---
+
 
 ## Why this document exists
 In healthcare environments, AI failures are not evaluated by sophistication or intent.
