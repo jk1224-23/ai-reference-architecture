@@ -1,4 +1,4 @@
-﻿# Article 6 — Security, Privacy & Compliance  
+﻿# Article 7 — Security, Privacy & Compliance  
 ## PHI-First Architecture for Enterprise AI
 
 ---
