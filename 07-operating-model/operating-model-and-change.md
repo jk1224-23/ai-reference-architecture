@@ -1,4 +1,4 @@
-﻿# Article 9 — Operating Model & Change Management  
+# Article 8 — Operating Model & Change Management  
 ## Running an AI System as a Governed Enterprise Capability
 
 ---

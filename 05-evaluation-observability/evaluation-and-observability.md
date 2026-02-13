@@ -1,4 +1,4 @@
-﻿# Article 7 — Evaluation & Observability  
+# Article 7 — Evaluation & Observability  
 ## Measuring Trust in Production AI Systems
 
 ---

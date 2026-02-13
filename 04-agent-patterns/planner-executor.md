@@ -1,4 +1,4 @@
-﻿# Article 5 — Agent Pattern  
+# Article 5 — Agent Pattern  
 ## Planner–Executor for Controlled Multi-Step Reasoning
 
 ---

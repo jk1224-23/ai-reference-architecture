@@ -1,4 +1,4 @@
-﻿# Executive Summary  
+# Executive Summary  
 ## AI Reference Architecture — Healthcare Voice & Chat Assistant
 
 ---
