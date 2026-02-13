@@ -32,7 +32,8 @@
             "message": "I can draft this request, but a representative must approve it before submission. I’ve created an approval request."
         }
 
-    if intent_name in ("CLAIM_STATUS", "ELIGIBILITY_VERIFY") and policy["decision"] == "ALLOW":
+    # Tool-backed SoR response (MVP: claim status only)
+    if intent_name == "CLAIM_STATUS" and policy["decision"] == "ALLOW":
         success = next((t for t in tool_calls if t.get("result") == "SUCCESS"), None)
         if not success:
             return {
@@ -41,19 +42,14 @@
                 "message": "I can’t verify that right now because the system evidence wasn’t available. Please try again or contact support."
             }
 
-        if intent_name == "CLAIM_STATUS":
-            status = (success.get("outputSummary") or {}).get("status", "Unknown")
-            last_updated = (success.get("outputSummary") or {}).get("lastUpdated", "")
-            return {
-                "responseType": "TOOL_BACKED",
-                "responseSummary": "Returned claim status using tool evidence.",
-                "message": f"Claim {intent.get('entities', {}).get('claimId')} status: {status}. Last updated: {last_updated}."
-            }
+        status = (success.get("outputSummary") or {}).get("status", "Unknown")
+        last_updated = (success.get("outputSummary") or {}).get("lastUpdated", "")
+        claim_id = (intent.get("entities") or {}).get("claimId")
 
         return {
             "responseType": "TOOL_BACKED",
-            "responseSummary": "Returned eligibility using tool evidence.",
-            "message": "Your eligibility result is available (tool-backed)."
+            "responseSummary": "Returned claim status using tool evidence.",
+            "message": f"Claim {claim_id} status: {status}. Last updated: {last_updated}."
         }
 
     return {

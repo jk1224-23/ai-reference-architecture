@@ -8,6 +8,7 @@ _registry = None
 
 
 def load_registry() -> dict:
+    """Load the tool registry JSON."""
     global _registry
     if _registry is None:
         with open(REGISTRY_PATH, "r", encoding="utf-8") as f:
@@ -15,7 +16,13 @@ def load_registry() -> dict:
     return _registry
 
 
+def load_tool_registry() -> dict:
+    """Alias used by executor; kept for clarity."""
+    return load_registry()
+
+
 def get_tool(tool_name: str) -> dict | None:
+    """Lookup a tool by name."""
     reg = load_registry()
     for t in reg.get("tools", []):
         if t.get("name") == tool_name:

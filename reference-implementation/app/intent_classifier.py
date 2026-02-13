@@ -1,29 +1,46 @@
 ﻿import re
 
+
 def classify_intent(message: str, channel: str) -> dict:
     m = message.lower()
 
+    # HIGH risk: transactional / escalation path (HITL)
     if "appeal" in m or "grievance" in m:
         claim_id = _extract_claim_id(m)
-        return {"intent": "APPEAL_INITIATION", "confidence": 0.78, "riskTier": "HIGH", "entities": _entities(claim_id)}
+        return {
+            "intent": "APPEAL_INITIATION",
+            "confidence": 0.78,
+            "riskTier": "HIGH",
+            "entities": _entities(claim_id),
+        }
 
-    if "update my address" in m or "change my address" in m:
-        return {"intent": "MEMBER_UPDATE", "confidence": 0.75, "riskTier": "HIGH", "entities": {}}
-
-    if "coverage" in m or "eligible" in m or "eligibility" in m:
-        return {"intent": "ELIGIBILITY_VERIFY", "confidence": 0.80, "riskTier": "MEDIUM", "entities": {}}
-
+    # MEDIUM risk: read-only SoR-backed (claim status)
     if "claim" in m and ("status" in m or "check" in m):
         claim_id = _extract_claim_id(m)
         conf = 0.86 if claim_id else (0.65 if channel == "voice" else 0.72)
-        return {"intent": "CLAIM_STATUS", "confidence": conf, "riskTier": "MEDIUM", "entities": _entities(claim_id)}
+        return {
+            "intent": "CLAIM_STATUS",
+            "confidence": conf,
+            "riskTier": "MEDIUM",
+            "entities": _entities(claim_id),
+        }
 
-    if "policy" in m or "benefit" in m or "explain" in m:
+    # LOW risk: KB-only (policy/coverage/benefits)
+    if (
+        "policy" in m
+        or "benefit" in m
+        or "benefits" in m
+        or "coverage" in m
+        or "covered" in m
+        or "explain" in m
+    ):
         return {"intent": "POLICY_EXPLANATION", "confidence": 0.75, "riskTier": "LOW", "entities": {}}
 
+    # LOW risk: KB-only (FAQs)
     if "faq" in m or "how do i" in m:
         return {"intent": "FAQ_GENERAL", "confidence": 0.70, "riskTier": "LOW", "entities": {}}
 
+    # Obvious prompt injection / unsafe instruction patterns
     if "ignore" in m and ("polic" in m or "rules" in m) and ("dump" in m or "all claims" in m):
         return {"intent": "UNKNOWN_OR_BLOCKED", "confidence": 0.62, "riskTier": "HIGH", "entities": {}}
 

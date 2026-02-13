@@ -11,6 +11,7 @@ class ChatRequest(BaseModel):
     userRole: str = "MEMBER"
     userId: str = "demo-user-1"  # for demo only; hash in audit
     sessionId: str = "demo-session-1"
+    approvalId: str | None = None
 
 
 @app.post("/chat")
@@ -21,4 +22,5 @@ def chat(req: ChatRequest):
         user_role=req.userRole,
         user_id=req.userId,
         session_id=req.sessionId,
+        approval_id=req.approvalId,
     )

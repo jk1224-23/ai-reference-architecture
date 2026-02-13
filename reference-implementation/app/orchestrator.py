@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 
 from app.intent_classifier import classify_intent
 from app.policy_engine import decide_policy
-from tools.executor import execute_tools_if_allowed
+from tools.executor import execute_tools
 from app.response_assembler import assemble_response
 from app.audit_logger import write_audit_event
 from app.kill_switches import get_kill_switch_state
@@ -13,7 +13,7 @@ def utc_now_iso() -> str:
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
 
-def handle_request(message: str, channel: str, user_role: str, user_id: str, session_id: str):
+def handle_request(message: str, channel: str, user_role: str, user_id: str, session_id: str, approval_id: str | None = None):
     correlation_id = f"c-{uuid.uuid4().hex[:8]}"
     request_id = f"r-{uuid.uuid4().hex[:8]}"
     timestamp = utc_now_iso()
@@ -34,16 +34,35 @@ def handle_request(message: str, channel: str, user_role: str, user_id: str, ses
         kill_switch_state=kill_switch_state,
     )
 
-    # 3) tool execution (only if allowed)
-    tool_calls = execute_tools_if_allowed(
+    # 3) prepare tool requests (only for allowed tools)
+    tool_requests = []
+    entities = intent_result.get("entities", {}) or {}
+    claim_id = entities.get("claimId")
+    for tool_name in policy_result.get("allowedTools", []):
+        if tool_name == "claims.read.v1":
+            tool_requests.append({"name": tool_name, "input": {"claimId": claim_id}})
+        elif tool_name == "case.create.v1":
+            tool_requests.append(
+                {
+                    "name": tool_name,
+                    "input": {
+                        "subject": "Appeal request",
+                        "description": message,
+                        "claimId": claim_id,
+                        # approvalId added by executor when available
+                    },
+                }
+            )
+
+    # 4) tool execution (only if allowed)
+    tool_calls = execute_tools(
         policy=policy_result,
         intent=intent_result,
-        user_role=user_role,
-        channel=channel,
-        correlation_id=correlation_id,
+        tool_requests=tool_requests,
+        approval_id=approval_id,
     )
 
-    # 4) response assembly (evidence-first)
+    # 5) response assembly (evidence-first)
     response = assemble_response(
         message=message,
         intent=intent_result,
@@ -52,7 +71,7 @@ def handle_request(message: str, channel: str, user_role: str, user_id: str, ses
         channel=channel,
     )
 
-    # 5) audit event
+    # 6) audit event
     audit_event = {
         "correlationId": correlation_id,
         "requestId": request_id,
