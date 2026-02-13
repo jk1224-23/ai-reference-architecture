@@ -11,17 +11,18 @@ This repository provides a **practical, enterprise-ready reference architecture*
 1. **Executive summary:** [README-executive-summary.md](./README-executive-summary.md)
 2. **Placemat (one-page):** [00-overview/architecture-placemat.md](./00-overview/architecture-placemat.md)
 3. **Architecture decisions (ADR-lite):** [00-overview/architecture-decisions.md](./00-overview/architecture-decisions.md)
-4. **Scope & principles:** [00-overview/scope-and-principles.md](./00-overview/scope-and-principles.md)
-5. **C4 Context:** [01-context/c4-context.md](./01-context/c4-context.md)
-6. **C4 Container:** [02-container/c4-container.md](./02-container/c4-container.md)
-7. **Data strategy (RAG vs Systems of Record):** [03-data-strategy/rag-vs-systems-of-record.md](./03-data-strategy/rag-vs-systems-of-record.md)
-8. **Agent patterns:**
+4. **Glossary:** [00-overview/glossary.md](./00-overview/glossary.md)
+5. **Scope & principles:** [00-overview/scope-and-principles.md](./00-overview/scope-and-principles.md)
+6. **C4 Context:** [01-context/c4-context.md](./01-context/c4-context.md)
+7. **C4 Container:** [02-container/c4-container.md](./02-container/c4-container.md)
+8. **Data strategy (RAG vs Systems of Record):** [03-data-strategy/rag-vs-systems-of-record.md](./03-data-strategy/rag-vs-systems-of-record.md)
+9. **Agent patterns:**
    - [04-agent-patterns/bounded-autonomy.md](./04-agent-patterns/bounded-autonomy.md)
    - [04-agent-patterns/planner-executor.md](./04-agent-patterns/planner-executor.md)
    - [04-agent-patterns/human-in-the-loop.md](./04-agent-patterns/human-in-the-loop.md)
-9. **Evaluation & observability:** [05-evaluation-observability/evaluation-and-observability.md](./05-evaluation-observability/evaluation-and-observability.md)
-10. **Security & compliance:** [06-security-compliance/security-and-compliance.md](./06-security-compliance/security-and-compliance.md)
-11. **Operating model & change:** [07-operating-model/operating-model-and-change.md](./07-operating-model/operating-model-and-change.md)
+10. **Evaluation & observability:** [05-evaluation-observability/evaluation-and-observability.md](./05-evaluation-observability/evaluation-and-observability.md)
+11. **Security & compliance:** [06-security-compliance/security-and-compliance.md](./06-security-compliance/security-and-compliance.md)
+12. **Operating model & change:** [07-operating-model/operating-model-and-change.md](./07-operating-model/operating-model-and-change.md)
 
 ## Repository structure
 - `00-overview/` — scope, non-goals, principles
