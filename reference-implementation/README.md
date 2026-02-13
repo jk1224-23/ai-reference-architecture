@@ -130,3 +130,13 @@ Every interaction emits:
 * YAML for policy + allowlist config
 * Local file corpus for KB docs
 * JSONL logs
+
+## Audit logging
+- logs/audit_event_schema.json — required audit event structure (PHI-minimized)
+- logs/sample_audit_events.jsonl — sample JSONL events (tool-backed, HITL, refusal)
+
+## Evaluation assets
+- eval/golden_set.json — regression scenarios (must not regress)
+- eval/red_team.json — adversarial safety tests
+- 	ools/tool_registry.json — structured tool metadata (contract enforcement)
+
