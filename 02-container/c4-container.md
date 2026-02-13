@@ -1,4 +1,4 @@
-# Article 2 — C4 Container  
+﻿# Article 2 â€” C4 Container  
 ## Inside the AI Assistant Platform
 
 ---
@@ -29,7 +29,7 @@ Without internal structure, AI assistant platforms tend to evolve into:
 - unclear ownership of failures
 - uncontrolled cost and behavior drift
 
-In regulated environments, these issues are not technical inconveniences — they become **compliance and operational risks**.
+In regulated environments, these issues are not technical inconveniences â€” they become **compliance and operational risks**.
 
 This container view exists to **separate concerns and enforce control points** inside the AI Assistant Platform.
 
@@ -155,6 +155,90 @@ This layer acts as a **capability firewall**.
 
 **Architectural rule**
 If a capability is not registered as a tool, it does not exist for AI.
+---
+
+## Tool contract standard (enterprise)
+
+Tools are the controlled bridge between the assistant and downstream systems-of-record/workflows. To prevent tool misuse, privilege creep, and brittle integrations, every tool onboarded into the platform must meet a consistent contract.
+
+> **Rule:** The model never calls tools directly. Tools are invoked only through the orchestrator + policy gate + tool registry.
+
+### 1) Required interface (schema + semantics)
+Every tool must publish a versioned schema (e.g., JSON Schema / OpenAPI) including:
+- **Name + version:** `claims.lookup.v1`
+- **Purpose statement:** what this tool is allowed to do (and not do)
+- **Inputs:** strongly typed fields with allowed ranges/patterns
+- **Outputs:** strongly typed response (no free-form blobs where possible)
+- **Error model:** standardized error codes + retryability
+- **Side effects:** explicit declaration (`read-only` vs `transactional`)
+
+**Design principle:** prefer small, purpose-built tools over “万能” query tools.
+
+### 2) Classification (must be declared)
+Each tool must declare:
+- **Tool type:** `READ_ONLY` or `TRANSACTIONAL`
+- **Data sensitivity:** `PUBLIC / INTERNAL / PII / PHI`
+- **Risk tier:** `LOW / MEDIUM / HIGH` (used by policy)
+- **Idempotency:** `IDEMPOTENT` (safe retries) or `NON_IDEMPOTENT` (approval required)
+- **Max scope:** what records/fields it can access (purpose limitation)
+
+### 3) Enforcement rules (platform guarantees)
+The platform must enforce (outside the LLM):
+- **Deny-by-default allowlisting:** intent → allowed tools mapping
+- **Parameter validation:** reject queries outside schema or exceeding scope
+- **Least privilege credentials:** scoped token per call (no shared “god token”)
+- **Rate limits & burst control:** per-user and per-tool quotas
+- **Timeouts & circuit breakers:** stop runaway retries and cascading failures
+- **Safe fallbacks:** degrade to KB-only or HITL-first when tools fail
+
+### 4) Audit requirements (mandatory fields)
+Every tool call must emit an auditable record containing:
+- `correlationId` (trace id across the request)
+- `requestId` (unique tool invocation id)
+- `timestamp` (start/end)
+- `actor` (user identity + role; session/assistant identity)
+- `intent` + `riskTier`
+- `policyDecision` (allow/deny + reason)
+- `toolName` + `toolVersion`
+- `inputSummary` (minimized; avoid PHI payloads in logs)
+- `outputSummary` (minimized; avoid PHI payloads in logs)
+- `result` (success/failure + error code)
+- `approvalId` (if HITL approval was required)
+
+### 5) Error taxonomy (standardize for orchestration)
+Tools must return normalized errors so the orchestrator can decide:
+- `VALIDATION_ERROR` (non-retryable; fix input)
+- `AUTHZ_DENIED` (non-retryable; policy/RBAC)
+- `NOT_FOUND` (non-retryable; missing entity)
+- `CONFLICT` (non-retryable; state mismatch)
+- `RATE_LIMITED` (retryable with backoff)
+- `TIMEOUT` (retryable with cap; may trigger degrade mode)
+- `DEPENDENCY_FAILURE` (retryable with backoff; may trip circuit breaker)
+- `UNKNOWN` (treated as failure; escalate if repeated)
+
+### 6) Safe query design (prevent exfiltration)
+To reduce data exposure and “dump” queries:
+- Prefer **targeted** endpoints (lookup by claimId/memberId with role checks)
+- Enforce **field-level filtering** (return only what is needed)
+- Apply **row limits** and **purpose limitation**
+- Block “export all” patterns by policy
+
+### 7) Approval requirements for transactional tools
+Transactional tools (create/update actions) must support:
+- **pre-execution check:** validate proposed action without executing (dry-run)
+- **approval binding:** execute only when a valid `approvalId` is supplied
+- **idempotency key:** prevent duplicate execution during retries
+
+### 8) Onboarding checklist (definition of done)
+A tool is “onboarded” only when:
+- schema is versioned and validated
+- allowlist mapping exists (intent → tool + approvals)
+- scopes and credentials are least privilege
+- audit fields are emitted and verified
+- timeouts, rate limits, and circuit breakers are configured
+- failure behaviors and degrade paths are documented
+
+---
 
 ---
 
@@ -215,4 +299,5 @@ flowchart TB
     Tools --> Audit
 ```
 ---
+
 
