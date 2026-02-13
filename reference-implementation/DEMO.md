@@ -36,3 +36,7 @@ curl -X POST http://localhost:8000/chat \
 ## Validation
 - Schema: `python scripts/validate_tools.py`
 - Audit: `logs/audit.jsonl` gets a new line per request
+## Diagrams (for walkthrough)
+- Flow: docs/diagrams/control-plane-flow.mmd
+- Sequence (claim status): docs/diagrams/sequence-claim-status.mmd
+- Sequence (appeal HITL): docs/diagrams/sequence-appeal-hitl.mmd

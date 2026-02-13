@@ -51,3 +51,10 @@ Served at `/` with static assets in `static/` (no build step). Shows chips (risk
 - `eval/golden_set.json` — regression cases (Option A)
 - `tests/test_api_smoke.py` — optional smoke test
 - `logs/` — audit output (jsonl)
+## Diagrams
+- Control Plane Flow (Mermaid): docs/diagrams/control-plane-flow.mmd
+- Claim Status Sequence (Mermaid): docs/diagrams/sequence-claim-status.mmd
+- Appeal HITL Sequence (Mermaid): docs/diagrams/sequence-appeal-hitl.mmd
+- C4 Context (draw.io): docs/diagrams/C4-Context-ControlPlane.drawio
+- C4 Container (draw.io): docs/diagrams/C4-Container-ControlPlane.drawio
+- Control Flow (draw.io): docs/diagrams/ControlPlane-Flow.drawio
