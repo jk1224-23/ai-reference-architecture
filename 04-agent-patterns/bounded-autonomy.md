@@ -3,6 +3,11 @@
 
 ---
 
+> **Start here (Agent Patterns):**  
+> - You are reading: **Bounded Autonomy**  
+> - Next: [Planner–Executor](./planner-executor.md)  
+> - Also: [Human-in-the-Loop (HITL)](./human-in-the-loop.md)
+
 ## Why this document exists
 “Agent-based AI” is one of the most misunderstood concepts in enterprise systems.
 

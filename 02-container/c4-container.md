@@ -3,6 +3,11 @@
 
 ---
 
+> **Start here / Next read:**  
+> - You are reading: **C4 Container**  
+> - Next: [Data Strategy](../03-data-strategy/rag-vs-systems-of-record.md)  
+> - Then: [Agent Patterns](../04-agent-patterns/bounded-autonomy.md)
+
 ## Why this document exists
 After defining **who interacts with the AI Assistant Platform and where its boundaries lie**, the next architectural responsibility is to explain:
 

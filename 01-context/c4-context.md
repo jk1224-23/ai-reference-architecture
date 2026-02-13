@@ -3,6 +3,11 @@
 
 ---
 
+> **Start here / Next read:**  
+> - You are reading: **C4 Context**  
+> - Next: [C4 Container](../02-container/c4-container.md)  
+> - Then: [Data Strategy](../03-data-strategy/rag-vs-systems-of-record.md)
+
 ## Why this document exists
 AI assistants in healthcare frequently fail **after deployment**, not during demos.
 

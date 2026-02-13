@@ -3,6 +3,34 @@
 
 ---
 
+---
+
+## Operational metrics (what you must measure)
+
+### Golden signals (platform)
+- Latency (p50/p95/p99) — end-to-end and per hop (LLM, tools, RAG)
+- Error rate — by component and by intent
+- Throughput — requests/min, tool calls/min, token usage
+- Saturation — queue depth, worker utilization, rate-limit hits
+
+### Agent signals (governance)
+- Escalation rate — overall and by intent/risk tier
+- Policy deny rate — which rules are blocking and why
+- Human override rate — approvals, edits, rejections, overrides with justification
+- Tool-plan success rate — % plans that execute without re-plan/retry
+
+### Safety signals (compliance)
+- PHI/PII redaction events — count and severity
+- Blocked intents / disallowed tool attempts — jailbreak / policy bypass indicators
+- Hallucination flags — unsupported claims detected by evaluation tests
+- Data leakage indicators — responses containing restricted identifiers
+
+### SLO suggestions (starter targets)
+- **Read-only KB answers:** p95 < 3s, error rate < 1%
+- **Tool-backed answers (read):** p95 < 8s, tool failure < 2%
+- **Escalations:** human handoff created < 10s, trace completeness 100%
+
+
 ## Why this document exists
 In traditional systems, failures are explicit:
 - an API returns an error

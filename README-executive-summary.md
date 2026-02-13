@@ -138,3 +138,56 @@ This reference architecture demonstrates that:
 > it is about making systems safer, more accountable, and operable at scale.**
 
 That is the role of an AI Architect.
+
+---
+
+## End-to-end walkthrough: Claim status (tool-backed) with governance
+
+**User goal:** “What is the status of my claim?”  
+
+1. **Intent classification** identifies *Claim Status* intent and assigns a risk tier (typically Medium).
+2. **Policy check** validates:
+   - user authentication and role
+   - PHI access boundaries
+   - rate limits and session constraints
+3. **Tool allowlist** selects the **Claims Read API** (system-of-record) as the source of truth.
+4. **Tool execution** runs with **scoped, short-lived credentials** and captures an audit trace.
+5. **Response assembly**:
+   - returns only evidence-backed status fields
+   - uses RAG only for *explanations* (e.g., “what does this status mean?”) with citations
+6. **Quality & safety gate** runs redaction + formatting checks.
+7. **Respond + audit**: final response is delivered and fully traceable.
+
+**Not allowed in this flow**
+- Creating/altering the claim
+- Advising on appeals/grievances without escalation
+- Stating outcomes not supported by tool evidence
+
+**Escalation triggers**
+- low confidence intent classification
+- inconsistent SoR results
+- disputes/appeals language detected
+- redaction/policy failures
+
+---
+
+## Boundaries: what the AI platform owns (and what it does not)
+
+**The AI platform owns**
+- orchestration, policy enforcement, and bounded autonomy controls
+- tool registry + allowlists + guarded execution patterns
+- RAG for explanatory knowledge (KB/SOP/policies)
+- observability: traces, audit logs, evaluation hooks
+
+**The AI platform does not own**
+- system-of-record truth (claims, eligibility, authorizations)
+- core workflow engines and business process ownership
+- enterprise identity provider (IdP) and access governance
+- downstream system SLAs (it consumes them; it does not define them)
+
+**Minimum “production-ready” bar**
+- policy gates and allowlists enforced outside the LLM
+- HITL for high-risk intents and transactional actions
+- auditable traces for every tool call and decision outcome
+- redaction + data minimization on all responses and logs
+

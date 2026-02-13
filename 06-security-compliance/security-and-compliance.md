@@ -3,6 +3,31 @@
 
 ---
 
+---
+
+## Security model clarity (identity, least privilege, retention)
+
+### Identity: user vs agent vs tool
+- **User identity:** the human (member/CSR/employee) authenticated by the enterprise IdP.
+- **Agent identity:** the orchestrator-controlled runtime identity used to call the LLM and coordinate steps (not a “user”).
+- **Tool identity:** per-tool service identity used for system access; mapped to least-privilege scopes and audited.
+
+**Rule:** Tool calls must be attributable to *both* the user context and the tool service identity.
+
+### Least privilege: scoped tokens per tool call
+- Issue **short-lived, scope-limited tokens** for each tool invocation.
+- Scope is derived from: intent category + risk tier + policy outcome + user role.
+- High-risk tool calls require **HITL approval** before a token is minted.
+
+### Data retention: what is logged, how long, where
+Log what you need for audit and incident response, but minimize PHI:
+- Store **decision traces** (intent, confidence, risk, policy outcomes, tool IDs, timestamps).
+- Store **tool call metadata** by default; store payloads only when permitted and necessary.
+- Apply retention by data class (e.g., short retention for raw prompts, longer for audit events).
+
+**Rule:** “Audit-first” does not mean “log everything forever.”
+
+
 ## Why this document exists
 In healthcare environments, AI failures are not evaluated by sophistication or intent.
 They are evaluated by **exposure**.

@@ -3,6 +3,19 @@
 
 ---
 
+---
+
+## Decision table: RAG vs Tools (KB vs Systems of Record)
+
+| Need | Use RAG / KB Retrieval | Use Tool (System-of-Record access) | Notes |
+|---|---|---|---|
+| Explain policies, benefits, procedures, FAQs | ✅ | ❌ | Cite sources; avoid fabricating transactional outcomes |
+| Answer “what does this code mean?” (e.g., reason/denial code definitions) | ✅ | ✅ | Tool gets the *code*; RAG explains the *meaning* |
+| Provide claim status / eligibility / coverage attributes | ❌ | ✅ | System-of-record is the source of truth |
+| Create/update a case, appeal, authorization, request | ❌ | ✅ (guarded) | Requires approvals / HITL for high-risk intents |
+| Troubleshoot “why did the system do X?” | ✅ | ✅ | Combine logs/tool outputs with KB explanations |
+
+
 ## Why this document exists
 Most AI assistant failures in healthcare are incorrectly labeled as “hallucination problems”.
 
