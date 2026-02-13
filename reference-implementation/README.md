@@ -3,10 +3,6 @@
 ## Goal
 Prove the **controls** (policy gating, allowlists, HITL binding, audit) with the smallest runnable system.
 
-## Configuration
-- `config/tool_allowlist.yaml` — deny-by-default mapping (intent → allowed tools → approvals)
-- `config/policy_rules.yaml` — deterministic enforcement rules (HITL, channels, logging, fallbacks)
-
 ## Recommended structure
 ```
 
@@ -134,8 +130,3 @@ Every interaction emits:
 * YAML for policy + allowlist config
 * Local file corpus for KB docs
 * JSONL logs
-
-## Evaluation assets
-- `eval/golden_set.json` — regression scenarios (must not regress)
-- `eval/red_team.json` — adversarial safety tests
-- `tools/tool_registry.json` — structured tool metadata (contract enforcement)

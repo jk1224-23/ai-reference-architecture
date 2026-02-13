@@ -1,4 +1,4 @@
-﻿# Article 3 - Data Strategy  
+﻿# Article 3 â€” Data Strategy  
 ## RAG vs Systems of Record
 
 ---
@@ -7,11 +7,11 @@
 
 | Need | Use RAG / KB Retrieval | Use Tool (System-of-Record access) | Notes |
 |---|---|---|---|
-| Explain policies, benefits, procedures, FAQs | Yes | No | Cite sources; avoid fabricating transactional outcomes |
-| Answer "what does this code mean?" (e.g., reason/denial code definitions) | Yes | Yes | Tool gets the *code*; RAG explains the *meaning* |
-| Provide claim status / eligibility / coverage attributes | No | Yes | System-of-record is the source of truth |
-| Create/update a case, appeal, authorization, request | No | Yes (guarded) | Requires approvals / HITL for high-risk intents |
-| Troubleshoot "why did the system do X?" | Yes | Yes | Combine logs/tool outputs with KB explanations |
+| Explain policies, benefits, procedures, FAQs | âœ… | âŒ | Cite sources; avoid fabricating transactional outcomes |
+| Answer â€œwhat does this code mean?â€ (e.g., reason/denial code definitions) | âœ… | âœ… | Tool gets the *code*; RAG explains the *meaning* |
+| Provide claim status / eligibility / coverage attributes | âŒ | âœ… | System-of-record is the source of truth |
+| Create/update a case, appeal, authorization, request | âŒ | âœ… (guarded) | Requires approvals / HITL for high-risk intents |
+| Troubleshoot â€œwhy did the system do X?â€ | âœ… | âœ… | Combine logs/tool outputs with KB explanations |
 
 
 ---
@@ -202,10 +202,8 @@ See also:
 - `02-container/c4-container.md` (Tool contract standard and execution controls)
 - `06-security-compliance/security-and-compliance.md` (Threat model and OWASP alignment)
 
----
-
-## Why this document exists
-Most AI assistant failures in healthcare are incorrectly labeled as "hallucination problems".
+---## Why this document exists
+Most AI assistant failures in healthcare are incorrectly labeled as â€œhallucination problemsâ€.
 
 In reality, they are **data trust problems**.
 
@@ -216,12 +214,12 @@ This document establishes **when the AI Assistant Platform may use knowledge ret
 ## Problem being addressed
 Healthcare AI assistants must answer questions that appear similar but differ fundamentally in risk:
 
-- "What does my plan generally cover?"
-- "What is my deductible today?"
-- "Is prior authorization required for this procedure?"
-- "Why was this specific claim denied?"
+- â€œWhat does my plan generally cover?â€
+- â€œWhat is my deductible today?â€
+- â€œIs prior authorization required for this procedure?â€
+- â€œWhy was this specific claim denied?â€
 
-Treating all of these as "information retrieval" problems causes:
+Treating all of these as â€œinformation retrievalâ€ problems causes:
 - fabricated answers
 - stale or incorrect responses
 - compliance risk
@@ -315,7 +313,7 @@ Used when:
 - incorrect answers do not directly cause financial harm
 
 Example:
-> "What typically requires prior authorization under my plan?"
+> â€œWhat typically requires prior authorization under my plan?â€
 
 Architectural reasoning:
 - No single system of record owns the explanation
@@ -331,7 +329,7 @@ Used when:
 - regulatory auditability is required
 
 Example:
-> "Was prior authorization required for my MRI last week?"
+> â€œWas prior authorization required for my MRI last week?â€
 
 Architectural reasoning:
 - The answer depends on historical state
@@ -346,7 +344,7 @@ Used when:
 - transaction data determines the outcome
 
 Example:
-> "Why was my claim denied?"
+> â€œWhy was my claim denied?â€
 
 Architectural reasoning:
 - denial reason must come from claims system
@@ -384,7 +382,7 @@ Trust is enforced by **structure**, not model behavior.
 
 ## Explicit non-goals
 This data strategy does **not**:
-- attempt to "train away" hallucinations
+- attempt to â€œtrain awayâ€ hallucinations
 - rely on prompt instructions to enforce trust
 - allow knowledge documents to override transactional truth
 - merge RAG and system queries into a single response path
@@ -400,7 +398,6 @@ The following article introduces **agent patterns**, explaining:
 - how humans remain in control
 
 These patterns build directly on the data rules defined here.
-
 
 
 
