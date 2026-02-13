@@ -226,6 +226,59 @@ These metrics measure **system health**, not model quality.
 
 ---
 
+## Release gates (quality + safety)
+
+Metrics are not enough. Enterprise assistants need **release gates** so regressions are caught **before** users see them. Gates should be enforced in the delivery pipeline and tied to clear owners and pass/fail criteria.
+
+### Gate model (three layers)
+- **Pre-merge (developer gate):** prevents unsafe changes from landing.
+- **Pre-release (promotion gate):** prevents unsafe builds from being deployed.
+- **Post-release (runtime gate):** detects drift and triggers rollback/degradation.
+
+### Release gate table (starter)
+| Gate | What runs | Pass criteria (examples) | Owner |
+|---|---|---|---|
+| Pre-merge | Prompt/tool lint checks, schema validation for tool contracts, unit tests for policy rules | No policy test failures; tool schemas valid; no “deny-by-default” bypass | Platform + Tool Owners |
+| Pre-merge | Prompt regression tests (golden conversations) | No critical scenario regressions; responses remain within policy | Platform |
+| Pre-release | Offline evaluation on “golden set” (role-based scenarios) | Meets quality thresholds (accuracy/helpfulness) and zero critical failures | Platform + Product |
+| Pre-release | Safety evaluation (PHI/PII leak tests, jailbreak suite, prompt injection suite) | **0 PHI leaks**, jailbreak success rate below threshold, policy bypass = 0 | Security/Compliance + Platform |
+| Pre-release | Tool behavior tests (timeouts, partial failures, retries, fallback behavior) | Tool failure handling works; no runaway retries; circuit breakers behave | Platform + SRE |
+| Pre-release | Canary / staged rollout | Error rate, deny rate, escalation rate within bounds | SRE + Platform |
+| Post-release | Guardrail monitoring + drift detection | Automatic rollback/degrade if thresholds breached | SRE + Platform |
+| Post-release | Sampling audit (human QA of traces) | QA pass rate maintained; no critical compliance issues | Compliance + Platform |
+
+### Runtime rollback and degradation triggers (examples)
+Use explicit triggers so operations is not guessing:
+
+**Immediate rollback / block**
+- Any detected **PHI/PII leakage** in user-visible responses beyond threshold (often “> 0” for confirmed leaks)
+- Evidence of **policy bypass** (tool called without allowlist approval)
+- Elevated-privilege tool use outside approved flows
+
+**Degrade mode (safe fallback)**
+- Tool execution failure rate exceeds threshold (e.g., sustained > 5–10%)
+- Downstream latency spikes breach SLO for a sustained window
+- Rate-limit / burst protection repeatedly triggers (system under load)
+
+**Model/prompt drift alarms**
+- Escalation rate spikes (agents getting uncertain or misclassifying)
+- Policy deny rate spikes (misaligned prompting, new attack patterns)
+- Hallucination flags increase in QA sampling
+
+### Degrade strategy (recommended default)
+When safety or tool reliability is at risk, degrade to safer modes:
+1. **KB-only mode (RAG only)** for explanatory responses
+2. **HITL-first mode** for transactional or ambiguous intents
+3. **Temporary intent blocks** for known-abused intent categories until patched
+
+### Notes on evidence and audit
+For any gate failure or rollback:
+- record the trigger, timestamps, and affected version (prompt/model/tool)
+- preserve the evaluation results and trace samples that caused the decision
+- link incident notes to the change record (PR/approval)
+
+---
+
 ### 4. Incident reconstruction
 The system must support:
 - replaying decision paths
