@@ -24,12 +24,21 @@
         }
 
     if decision == "ALLOW_HITL" and policy.get("hitlRequired", False):
-        approval_id = "approval-pending-demo"
+        success = next((t for t in tool_calls if t.get("result") == "SUCCESS"), None)
+        if success:
+            case_id = (success.get("outputSummary") or {}).get("caseId", "pending")
+            status = (success.get("outputSummary") or {}).get("status", "PENDING_REVIEW")
+            return {
+                "responseType": "TOOL_BACKED",
+                "responseSummary": "Transactional action executed after approval.",
+                "message": f"Appeal case {case_id} created. Status: {status}.",
+            }
+        approval_id = policy.get("approvalId", "approval-required")
         return {
             "responseType": "ESCALATION",
             "responseSummary": "High-risk intent; execution blocked pending human approval.",
             "hitl": {"approvalRequired": True, "approvalId": approval_id, "approvalStatus": "PENDING"},
-            "message": "I can draft this request, but a representative must approve it before submission. I’ve created an approval request."
+            "message": "I can draft this request, but a representative must approve it before submission. Provide the approval ID to proceed."
         }
 
     # Tool-backed SoR response (MVP: claim status only)

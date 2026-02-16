@@ -1,15 +1,22 @@
 ﻿import time
 
-def case_create(intent: dict, correlation_id: str) -> dict:
+
+def case_create(subject: str, description: str, claim_id: str, approval_id: str) -> dict:
+    """Mock transactional tool requiring approvalId."""
     start = time.time()
+
+    if not approval_id:
+        return {
+            "result": "BLOCKED",
+            "error": {"code": "HITL_APPROVAL_REQUIRED", "message": "approvalId required"},
+        }
+
+    case_id = f"CASE-{claim_id or 'unknown'}"
     dur = int((time.time() - start) * 1000)
     return {
-        "toolName": "case.create.v1",
-        "toolVersion": "v1",
-        "requestId": f"t-{correlation_id}-case",
+        "caseId": case_id,
+        "status": "PENDING_REVIEW",
         "durationMs": dur,
-        "result": "FAILURE",
-        "errorCode": "SHOULD_HAVE_BEEN_BLOCKED",
-        "inputSummary": {},
-        "outputSummary": {}
+        "subject": subject,
+        "description": description,
     }

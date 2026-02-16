@@ -10,9 +10,10 @@ Everything else is KB-only or denied.
 cd reference-implementation
 python -m pip install -r requirements.txt
 python scripts/validate_tools.py
-uvicorn api:app --reload --port 8000
+python -m pytest -q          # optional smoke
+uvicorn api:app --reload --port 8001
 ```
-Then open http://localhost:8000/ for the UI, or call the API directly.
+Then open http://localhost:8001/ for the UI, or call the API directly.
 
 ### API
 - `GET /health` → `{ "status": "ok" }`
