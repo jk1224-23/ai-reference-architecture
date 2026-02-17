@@ -2,6 +2,10 @@
 
 This repository provides a **practical, enterprise-ready reference architecture** for building a regulated-domain AI assistant (voice + chat) with **governed agent behavior**, **tool-based system access**, **RAG for explanatory knowledge**, and **audit-first observability**.
 
+## Repo Boundaries
+- This repo defines the vendor-neutral reference architecture: principles, patterns, governance policies, and diagrams.
+- Implementation details belong in the companion repo: ai-reference-implementation.
+
 ## Who this is for
 - Enterprise architects and platform engineers
 - Security/compliance stakeholders
