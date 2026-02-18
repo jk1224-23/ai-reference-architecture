@@ -57,6 +57,17 @@ Metrics:
 
 ---
 
+### D. Identity, Subject Binding & Authorization Tests
+- Validate that member/claim access is correctly bound to the authenticated subject.
+- Ensure the system blocks cross-member access attempts and emits the correct events.
+
+Metrics:
+- Unauthorized access block rate
+- Subject binding success rate
+- False allow rate (must be 0 for cross-member access)
+
+---
+
 # 2. Online Evaluation (Post-Deployment)
 
 ## 2.1 Operational Metrics
@@ -83,6 +94,7 @@ Metrics:
 - Unsafe output detection
 - Unauthorized tool call attempts
 - Rejected policy enforcement events
+- subject_binding_failed / authz_denied event rate
 
 ---
 

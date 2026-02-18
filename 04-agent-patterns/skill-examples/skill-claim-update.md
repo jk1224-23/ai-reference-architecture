@@ -8,6 +8,11 @@
 - Caller and runtime identity pass policy checks.
 - Write path is restricted to approved fields and approved environments.
 - PHI boundary note: PHI may be processed in-system for authorized operations, but logs and traces must use redaction/minimization by default.
+- Identity is established at session start (authenticated user / CSR context).
+- Subject binding is required before any member/claim access:
+  - Resolve `member_id` (and permitted dependents, if applicable) from the authenticated session/context or via explicit member lookup.
+  - Validate the caller is authorized to act on the resolved `member_id`.
+- If subject binding or authorization fails, the skill must stop and emit `subject_binding_failed` / `authz_denied`.
 
 ## Inputs
 - Claim identifier and tenant/context identifier.
@@ -22,11 +27,15 @@
 - Correlation reference for audit lookup.
 
 ## High-Level Steps
-1. Resolve intent to `skill_claim_update` from approved skill allowlist.
-2. Run policy checks for scope, role, data boundary, and allowed update fields.
-3. Trigger HITL approval when required by risk and environment policy.
-4. Execute approved write tool through contracted adapter.
-5. Record outcome and emit observability/audit events.
+1. Subject Binding & Authorization
+   - Resolve `member_id`/`claim_id` in scope for this request (from session context or explicit lookup).
+   - Confirm the caller is authorized for the subject (member/claim) and requested operation.
+   - If mismatch/unauthorized -> block execution and route to escalation/HITL per policy.
+2. Resolve intent to `skill_claim_update` from approved skill allowlist.
+3. Run policy checks for scope, role, data boundary, and allowed update fields.
+4. Trigger HITL approval when required by risk and environment policy.
+5. Execute approved write tool through contracted adapter.
+6. Record outcome and emit observability/audit events.
 
 ## Allowed Tools
 - Write-capable tools aligned to tool-contracts for claim updates.
@@ -42,6 +51,8 @@
 - intent_recognized
 - skill_resolved
 - policy_check_completed
+- subject_binding_verified
+- subject_binding_failed (or authz_denied)
 - approval_requested / approval_decision
 - tool_execution_started / tool_execution_completed
 - safe_fallback_triggered
