@@ -14,6 +14,7 @@ Agent Skill = bounded, versioned capability wrapper governing tool usage, data s
 
 | Skill | Category | Allowed Tool Types | Human Approval? | Observability Events |
 |---|---|---|---|---|
+| knowledge_retrieval | Read-only (Flow A) | Retrieval/RAG connector, policy/KB lookup | No | skill_invoked, retrieval_started, retrieval_completed, citations_attached, skill_failed |
 | `skill_kb_grounded_answer` | Read-only Skills (Flow A) | Knowledge search, document retrieval | No | intent_recognized, skill_resolved, retrieval_completed, response_emitted |
 | `skill_provider_lookup` | Read-only Skills (Flow A) | Directory lookup, metadata query | No | intent_recognized, skill_resolved, tool_called, response_emitted |
 | `skill_incident_context` | Read-only Skills (Flow A) | Ticket read, runbook search, health summary read | No | intent_recognized, skill_resolved, tool_called, citation_attached |
