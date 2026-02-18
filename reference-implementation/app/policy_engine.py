@@ -55,6 +55,7 @@ def decide_policy(
     confidence: float,
     risk_tier: str,
     entities: dict,
+    skill_route: dict,
     channel: str,
     user_role: str,
     user_id: str,
@@ -76,9 +77,31 @@ def decide_policy(
             "killSwitchesActive": kill_switches_active,
         }
 
+    if not skill_route.get("resolved", False):
+        reasons.extend(skill_route.get("reasons", ["DENY_BY_DEFAULT_NO_SKILL_ROUTE"]))
+        return {
+            "decision": "DENY",
+            "allowedTools": [],
+            "hitlRequired": False,
+            "reasons": reasons,
+            "killSwitchesActive": kill_switches_active,
+        }
+
     allowlist_entry = (_allowlist.get("intents") or {}).get(intent)
     if not allowlist_entry:
         reasons.append("DENY_BY_DEFAULT_NO_MAPPING")
+        return {
+            "decision": "DENY",
+            "allowedTools": [],
+            "hitlRequired": False,
+            "reasons": reasons,
+            "killSwitchesActive": kill_switches_active,
+        }
+
+    expected_skill = allowlist_entry.get("skill")
+    resolved_skill = skill_route.get("skillId")
+    if expected_skill and expected_skill != resolved_skill:
+        reasons.extend(["SKILL_ROUTE_MISMATCH", f"EXPECTED:{expected_skill}", f"RESOLVED:{resolved_skill}"])
         return {
             "decision": "DENY",
             "allowedTools": [],
@@ -112,7 +135,12 @@ def decide_policy(
     if subject_binding.get("required"):
         reasons.append("SUBJECT_BINDING_VERIFIED")
 
-    base_allowed_tools = _extract_allowed_tools(allowlist_entry)
+    allowlist_tools = set(_extract_allowed_tools(allowlist_entry))
+    skill_tools = set(skill_route.get("allowedTools", []))
+    base_allowed_tools = [tool_name for tool_name in skill_route.get("allowedTools", []) if tool_name in allowlist_tools]
+    if skill_tools != set(base_allowed_tools):
+        reasons.append("SKILL_TOOL_CONSTRAINED_BY_ALLOWLIST")
+
     allowed_tools = _apply_tool_circuit_breakers(
         allowed_tools=base_allowed_tools,
         kill_switch_state=kill_switch_state,
@@ -129,10 +157,20 @@ def decide_policy(
             "killSwitchesActive": kill_switches_active,
             "subjectBinding": subject_binding,
         }
+    if skill_tools and not base_allowed_tools:
+        reasons.append("SKILL_TOOL_MISMATCH")
+        return {
+            "decision": "DENY",
+            "allowedTools": [],
+            "hitlRequired": False,
+            "reasons": reasons,
+            "killSwitchesActive": kill_switches_active,
+            "subjectBinding": subject_binding,
+        }
 
     if kill_switch_state.get("hitl_first_mode"):
         kill_switches_active.append("hitl_first_mode")
-        reasons.extend(["KILL_SWITCH_HITL_FIRST", "ALLOWLIST_MATCH"])
+        reasons.extend(["KILL_SWITCH_HITL_FIRST", "ALLOWLIST_MATCH", "SKILL_ROUTE_MATCH"])
         return {
             "decision": "ALLOW_HITL" if allowed_tools else "ALLOW",
             "allowedTools": allowed_tools,
@@ -143,7 +181,7 @@ def decide_policy(
         }
 
     if channel == "voice" and risk_tier in _policy["channels"]["voice"]["confirmation_required_risk_tiers"]:
-        reasons.extend(["VOICE_CONFIRMATION_REQUIRED", "ALLOWLIST_MATCH"])
+        reasons.extend(["VOICE_CONFIRMATION_REQUIRED", "ALLOWLIST_MATCH", "SKILL_ROUTE_MATCH"])
         return {
             "decision": "ALLOW_WITH_CONFIRMATION",
             "allowedTools": allowed_tools,
@@ -153,8 +191,8 @@ def decide_policy(
             "subjectBinding": subject_binding,
         }
 
-    if risk_tier == "HIGH":
-        reasons.extend(["HIGH_RISK_INTENT", "ALLOWLIST_MATCH"])
+    if risk_tier == "HIGH" or skill_route.get("hitlRequiredBySkill", False):
+        reasons.extend(["HIGH_RISK_INTENT", "ALLOWLIST_MATCH", "SKILL_ROUTE_MATCH"])
         return {
             "decision": "ALLOW_HITL",
             "allowedTools": allowed_tools,
@@ -164,7 +202,7 @@ def decide_policy(
             "subjectBinding": subject_binding,
         }
 
-    reasons.extend(["ALLOWLIST_MATCH", "ROLE_OK"])
+    reasons.extend(["ALLOWLIST_MATCH", "SKILL_ROUTE_MATCH", "ROLE_OK"])
     return {
         "decision": "ALLOW",
         "allowedTools": allowed_tools,

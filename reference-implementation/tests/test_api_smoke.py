@@ -32,6 +32,8 @@ def test_claim_status_allows_and_calls_tool():
     assert resp.status_code == 200
     data = resp.json()
     assert data["intent"]["name"] == "CLAIM_STATUS"
+    assert data["skill"]["skillId"] == "skill.claim_status_lookup.v1"
+    assert data["skill"]["resolved"] is True
     assert data["policy"]["decision"] == "ALLOW"
     tool_call = _tool_call(data, "claims.read.v1")
     assert tool_call is not None
@@ -52,6 +54,7 @@ def test_missing_claim_id_is_denied_by_subject_binding():
     assert resp.status_code == 200
     data = resp.json()
     assert data["intent"]["name"] == "CLAIM_STATUS"
+    assert data["skill"]["skillId"] == "skill.claim_status_lookup.v1"
     assert data["policy"]["decision"] == "DENY"
     assert "MISSING_SUBJECT_ID" in data["policy"]["reasons"]
     assert not data.get("toolCalls")
@@ -69,6 +72,7 @@ def test_cross_member_access_is_denied():
     )
     assert resp.status_code == 200
     data = resp.json()
+    assert data["skill"]["skillId"] == "skill.claim_status_lookup.v1"
     assert data["policy"]["decision"] == "DENY"
     assert "SUBJECT_NOT_AUTHORIZED" in data["policy"]["reasons"]
     assert not data.get("toolCalls")
@@ -87,6 +91,7 @@ def test_appeal_requires_hitl_without_approval():
     assert resp.status_code == 200
     data = resp.json()
     assert data["intent"]["name"] == "APPEAL_INITIATION"
+    assert data["skill"]["skillId"] == "skill.claim_update.v1"
     assert data["policy"]["decision"] == "ALLOW_HITL"
     blocked = _tool_call(data, "case.create.v1")
     assert blocked is not None
@@ -108,6 +113,7 @@ def test_appeal_executes_when_approval_id_is_present():
     )
     assert resp.status_code == 200
     data = resp.json()
+    assert data["skill"]["skillId"] == "skill.claim_update.v1"
     tool_call = _tool_call(data, "case.create.v1")
     assert tool_call is not None
     assert tool_call["result"] == "SUCCESS"
@@ -127,6 +133,7 @@ def test_prompt_injection_denied():
     assert resp.status_code == 200
     data = resp.json()
     assert data["policy"]["decision"] in {"DENY", "DEGRADED_KB_ONLY"}
+    assert data["skill"]["resolved"] is False
     assert not data.get("toolCalls")
 
 
@@ -148,6 +155,7 @@ def test_kb_only_kill_switch_forces_degraded_mode(monkeypatch):
     )
     assert resp.status_code == 200
     data = resp.json()
+    assert data["skill"]["skillId"] == "skill.claim_status_lookup.v1"
     assert data["policy"]["decision"] == "DEGRADED_KB_ONLY"
     assert not data.get("toolCalls")
 
@@ -174,6 +182,7 @@ def test_circuit_breaker_blocks_tool_execution(monkeypatch):
     )
     assert resp.status_code == 200
     data = resp.json()
+    assert data["skill"]["skillId"] == "skill.claim_status_lookup.v1"
     assert data["policy"]["decision"] == "DENY"
     assert any(reason.startswith("TOOL_CIRCUIT_BREAKER_ACTIVE:") for reason in data["policy"]["reasons"])
     assert not data.get("toolCalls")

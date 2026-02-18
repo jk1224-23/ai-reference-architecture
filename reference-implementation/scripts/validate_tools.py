@@ -10,10 +10,11 @@ ROOT = Path(__file__).resolve().parents[1]
 REGISTRY = ROOT / "tools" / "tool_registry.json"
 SCHEMA = ROOT / "standards" / "schemas" / "tool-contract.schema.json"
 ALLOWLIST = ROOT / "config" / "tool_allowlist.yaml"
+SKILL_REGISTRY = ROOT / "config" / "skill_registry.yaml"
 
 
 def main() -> int:
-    required_files = [REGISTRY, SCHEMA, ALLOWLIST]
+    required_files = [REGISTRY, SCHEMA, ALLOWLIST, SKILL_REGISTRY]
     missing = [path for path in required_files if not path.exists()]
     if missing:
         for path in missing:
@@ -23,6 +24,7 @@ def main() -> int:
     schema = json.loads(SCHEMA.read_text(encoding="utf-8"))
     registry = json.loads(REGISTRY.read_text(encoding="utf-8"))
     allowlist = yaml.safe_load(ALLOWLIST.read_text(encoding="utf-8"))
+    skill_registry = yaml.safe_load(SKILL_REGISTRY.read_text(encoding="utf-8"))
 
     validate(instance=registry, schema=schema)
 
@@ -36,7 +38,26 @@ def main() -> int:
     errors: list[str] = []
 
     intents = (allowlist or {}).get("intents") or {}
+    skills = (skill_registry or {}).get("skills") or {}
+    intent_to_skill = (skill_registry or {}).get("intent_to_skill") or {}
+
+    for intent_name, skill_name in intent_to_skill.items():
+        if skill_name not in skills:
+            errors.append(f"skill_registry: intent '{intent_name}' maps to missing skill '{skill_name}'")
+
     for intent_name, intent_cfg in intents.items():
+        allowlist_skill = intent_cfg.get("skill")
+        routed_skill = intent_to_skill.get(intent_name)
+        if not allowlist_skill:
+            errors.append(f"{intent_name}: missing skill mapping in allowlist")
+        elif allowlist_skill not in skills:
+            errors.append(f"{intent_name}: allowlist skill '{allowlist_skill}' not found in skill registry")
+        elif routed_skill != allowlist_skill:
+            errors.append(
+                f"{intent_name}: skill mismatch (allowlist={allowlist_skill}, skill_registry={routed_skill})"
+            )
+
+        skill_tools = set((skills.get(allowlist_skill) or {}).get("allowed_tools") or [])
         for allowed in intent_cfg.get("allowed_tools", []) or []:
             tool_name = allowed.get("name")
             if not tool_name:
@@ -65,6 +86,9 @@ def main() -> int:
                 errors.append(
                     f"{intent_name}: transactional tool '{tool_name}' must set requires_approval=true in allowlist"
                 )
+
+            if skill_tools and tool_name not in skill_tools:
+                errors.append(f"{intent_name}: tool '{tool_name}' is not declared in skill '{allowlist_skill}'")
 
     if errors:
         for error in errors:

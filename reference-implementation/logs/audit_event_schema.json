@@ -35,6 +35,15 @@
         "entities": { "type": "object", "description": "PHI-minimized; IDs only where needed" }
       }
     },
+    "skill": {
+      "type": "object",
+      "properties": {
+        "skillId": { "type": ["string", "null"] },
+        "resolved": { "type": "boolean" },
+        "category": { "type": ["string", "null"] },
+        "reasons": { "type": "array", "items": { "type": "string" } }
+      }
+    },
     "policy": {
       "type": "object",
       "required": ["decision", "reasons"],
@@ -46,6 +55,16 @@
         "reasons": { "type": "array", "items": { "type": "string" } },
         "allowedTools": { "type": "array", "items": { "type": "string" } },
         "hitlRequired": { "type": "boolean" }
+      }
+    },
+    "subjectBinding": {
+      "type": "object",
+      "properties": {
+        "required": { "type": "boolean" },
+        "verified": { "type": "boolean" },
+        "event": { "type": "string" },
+        "reason": { "type": "string" },
+        "subject": { "type": "object" }
       }
     },
     "toolCalls": {

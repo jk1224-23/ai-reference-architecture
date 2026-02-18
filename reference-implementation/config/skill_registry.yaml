@@ -1,0 +1,34 @@
+version: "1.0"
+
+default:
+  route: "DENY"
+
+skills:
+  skill.kb_general.v1:
+    category: "READ_ONLY"
+    allowed_tools: []
+    hitl_required: false
+    subject_binding_required: false
+    description: "General knowledge and policy explanations (KB-only)."
+
+  skill.claim_status_lookup.v1:
+    category: "READ_ONLY"
+    allowed_tools:
+      - "claims.read.v1"
+    hitl_required: false
+    subject_binding_required: true
+    description: "Claim status lookup with subject binding and tool evidence."
+
+  skill.claim_update.v1:
+    category: "TRANSACTIONAL"
+    allowed_tools:
+      - "case.create.v1"
+    hitl_required: true
+    subject_binding_required: true
+    description: "State-changing claim assistance requiring HITL."
+
+intent_to_skill:
+  POLICY_EXPLANATION: "skill.kb_general.v1"
+  FAQ_GENERAL: "skill.kb_general.v1"
+  CLAIM_STATUS: "skill.claim_status_lookup.v1"
+  APPEAL_INITIATION: "skill.claim_update.v1"

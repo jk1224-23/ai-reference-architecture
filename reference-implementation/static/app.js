@@ -3,12 +3,14 @@ const transcriptEl = document.getElementById("transcript");
 const tabs = document.querySelectorAll(".tab");
 const tabContents = {
   intent: document.getElementById("tab-intent"),
+  skill: document.getElementById("tab-skill"),
   policy: document.getElementById("tab-policy"),
   tools: document.getElementById("tab-tools"),
   audit: document.getElementById("tab-audit"),
 };
 
 const chipCorrelation = document.getElementById("chip-correlation");
+const chipSkill = document.getElementById("chip-skill");
 const chipRisk = document.getElementById("chip-risk");
 const chipDecision = document.getElementById("chip-decision");
 const chipMode = document.getElementById("chip-mode");
@@ -17,6 +19,7 @@ const userIdEl = document.getElementById("userId");
 
 function setChips(payload) {
   chipCorrelation.textContent = `Correlation: ${payload?.audit?.correlationId ?? "—"}`;
+  chipSkill.textContent = `Skill: ${payload?.skill?.skillId ?? "—"}`;
   chipRisk.textContent = `Risk: ${payload?.intent?.riskTier ?? "—"}`;
   chipDecision.textContent = `Decision: ${payload?.policy?.decision ?? "—"}`;
   const mode = payload?.policy?.hitlRequired
@@ -29,6 +32,7 @@ function setChips(payload) {
 
 function setTabs(payload) {
   tabContents.intent.textContent = JSON.stringify(payload.intent || {}, null, 2);
+  tabContents.skill.textContent = JSON.stringify(payload.skill || {}, null, 2);
   tabContents.policy.textContent = JSON.stringify(payload.policy || {}, null, 2);
   tabContents.tools.textContent = JSON.stringify(payload.toolCalls || [], null, 2);
   tabContents.audit.textContent = JSON.stringify(payload.audit || {}, null, 2);

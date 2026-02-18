@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 
 from app.intent_classifier import classify_intent
 from app.policy_engine import decide_policy
+from app.skill_router import resolve_skill
 from tools.executor import execute_tools
 from app.response_assembler import assemble_response
 from app.audit_logger import write_audit_event
@@ -32,12 +33,20 @@ def handle_request(
     # 1) intent classification
     intent_result = classify_intent(message=message, channel=channel)
 
-    # 2) deterministic policy decision
+    # 2) skill routing (intent -> approved skill)
+    skill_result = resolve_skill(
+        intent=intent_result["intent"],
+        risk_tier=intent_result["riskTier"],
+        entities=intent_result.get("entities", {}),
+    )
+
+    # 3) deterministic policy decision
     policy_result = decide_policy(
         intent=intent_result["intent"],
         confidence=float(intent_result["confidence"]),
         risk_tier=intent_result["riskTier"],
         entities=intent_result.get("entities", {}),
+        skill_route=skill_result,
         channel=channel,
         user_role=user_role,
         user_id=user_id,
@@ -49,7 +58,7 @@ def handle_request(
         if approval_id:
             policy_result.setdefault("reasons", []).append("HITL_APPROVAL_PROVIDED")
 
-    # 3) prepare tool requests (only for allowed tools)
+    # 4) prepare tool requests (only for allowed tools)
     tool_requests = []
     entities = intent_result.get("entities", {}) or {}
     claim_id = entities.get("claimId")
@@ -68,7 +77,7 @@ def handle_request(
                 }
             )
 
-    # 4) tool execution (only if allowed)
+    # 5) tool execution (only if allowed)
     tool_calls = execute_tools(
         policy=policy_result,
         intent=intent_result,
@@ -77,7 +86,7 @@ def handle_request(
         kill_switch_state=kill_switch_state,
     )
 
-    # 5) response assembly (evidence-first)
+    # 6) response assembly (evidence-first)
     response = assemble_response(
         message=message,
         intent=intent_result,
@@ -86,7 +95,7 @@ def handle_request(
         channel=channel,
     )
 
-    # 6) audit event
+    # 7) audit event
     audit_event = {
         "correlationId": correlation_id,
         "requestId": request_id,
@@ -102,6 +111,12 @@ def handle_request(
             "confidence": float(intent_result["confidence"]),
             "riskTier": intent_result["riskTier"],
             "entities": intent_result.get("entities", {}),
+        },
+        "skill": {
+            "skillId": skill_result.get("skillId"),
+            "resolved": bool(skill_result.get("resolved", False)),
+            "category": skill_result.get("category"),
+            "reasons": skill_result.get("reasons", []),
         },
         "policy": {
             "decision": policy_result["decision"],
@@ -132,6 +147,7 @@ def handle_request(
     return {
         "correlationId": correlation_id,
         "intent": audit_event["intent"],
+        "skill": audit_event["skill"],
         "policy": audit_event["policy"],
         "toolCalls": tool_calls,
         "response": {
