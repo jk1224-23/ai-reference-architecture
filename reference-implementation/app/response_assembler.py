@@ -11,6 +11,10 @@ def _is_circuit_breaker_denial(reasons: list[str]) -> bool:
     return any(reason.startswith("TOOL_CIRCUIT_BREAKER_ACTIVE:") for reason in reasons)
 
 
+def _is_approval_denial(reasons: list[str]) -> bool:
+    return any(reason in {"HITL_APPROVAL_REJECTED"} for reason in reasons)
+
+
 def _find_tool_success(tool_calls: list[dict], tool_name: str) -> dict | None:
     for tool_call in tool_calls:
         call_name = tool_call.get("toolName") or tool_call.get("name")
@@ -25,6 +29,12 @@ def assemble_response(message: str, intent: dict, policy: dict, tool_calls: list
     reasons = policy.get("reasons", [])
 
     if decision == "DENY":
+        if _is_approval_denial(reasons):
+            return {
+                "responseType": "ESCALATION",
+                "responseSummary": "Write action denied because HITL approval was rejected.",
+                "message": "That action was denied by the approver. I can help draft a revised request."
+            }
         if _is_subject_binding_denial(reasons):
             return {
                 "responseType": "REFUSAL",

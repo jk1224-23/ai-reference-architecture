@@ -64,6 +64,8 @@ def resolve_skill(*, intent: str, risk_tier: str, entities: dict) -> dict:
         "allowedTools": list(skill_cfg.get("allowed_tools") or []),
         "hitlRequiredBySkill": bool(skill_cfg.get("hitl_required", False)),
         "subjectBindingRequired": bool(skill_cfg.get("subject_binding_required", False)),
+        "maxToolCallsPerTurn": int(skill_cfg.get("max_tool_calls_per_turn", len(skill_cfg.get("allowed_tools") or []))),
+        "maxTurnDurationMs": int(skill_cfg.get("max_turn_duration_ms", 6000)),
         "description": skill_cfg.get("description", ""),
         "reasons": ["SKILL_ROUTE_MATCH"],
         "metadata": {"intent": intent, "riskTier": risk_tier, "entities": entities or {}},

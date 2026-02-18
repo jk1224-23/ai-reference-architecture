@@ -35,11 +35,18 @@ Configure these environment variables before starting `uvicorn`:
 - `AI_TOOL_CIRCUIT_BREAKERS=claims.read.v1,case.create.v1` (disable specific tools)
 
 ### UI
-Served at `/` with static assets in `static/` (no build step). Shows chips (correlation, skill, risk, decision, mode), chat panel, inspector tabs (Intent / Skill / Policy / Tools / Audit), and a simple flow diagram.
+Served at `/` with static assets in `static/` (no build step). Includes:
+- chips (correlation, skill, risk, decision, mode)
+- approval simulation panel (Approve/Deny for pending HITL requests)
+- runtime control toggles (KB-only, HITL-first, per-tool circuit breakers)
+- inspector tabs (Intent / Skill / Policy / Tools / Timeline / Audit)
+- export trace button for one-click JSON download
+- confidence + escalation decision card
 
 ## Validation
 - Tool registry schema: `python scripts/validate_tools.py`
 - Audit logs: appended to `logs/audit.jsonl` for every /chat call.
+- Skill coverage tests: `tests/test_skill_coverage.py`
 
 ## Demo scenarios (Option A)
 1) Claim status (tool-backed): "What is the status of claim 12345?" → ALLOW → `claims.read.v1` SUCCESS → TOOL_BACKED

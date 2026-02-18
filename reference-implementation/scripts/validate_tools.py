@@ -45,6 +45,14 @@ def main() -> int:
         if skill_name not in skills:
             errors.append(f"skill_registry: intent '{intent_name}' maps to missing skill '{skill_name}'")
 
+    for skill_name, skill_cfg in skills.items():
+        max_tools = int(skill_cfg.get("max_tool_calls_per_turn", -1))
+        max_turn_ms = int(skill_cfg.get("max_turn_duration_ms", 0))
+        if max_tools < 0:
+            errors.append(f"{skill_name}: max_tool_calls_per_turn must be >= 0")
+        if max_turn_ms <= 0:
+            errors.append(f"{skill_name}: max_turn_duration_ms must be > 0")
+
     for intent_name, intent_cfg in intents.items():
         allowlist_skill = intent_cfg.get("skill")
         routed_skill = intent_to_skill.get(intent_name)

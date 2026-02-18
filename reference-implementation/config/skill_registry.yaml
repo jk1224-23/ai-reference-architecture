@@ -9,6 +9,8 @@ skills:
     allowed_tools: []
     hitl_required: false
     subject_binding_required: false
+    max_tool_calls_per_turn: 0
+    max_turn_duration_ms: 3000
     description: "General knowledge and policy explanations (KB-only)."
 
   skill.claim_status_lookup.v1:
@@ -17,6 +19,8 @@ skills:
       - "claims.read.v1"
     hitl_required: false
     subject_binding_required: true
+    max_tool_calls_per_turn: 1
+    max_turn_duration_ms: 6000
     description: "Claim status lookup with subject binding and tool evidence."
 
   skill.claim_update.v1:
@@ -25,6 +29,8 @@ skills:
       - "case.create.v1"
     hitl_required: true
     subject_binding_required: true
+    max_tool_calls_per_turn: 2
+    max_turn_duration_ms: 9000
     description: "State-changing claim assistance requiring HITL."
 
 intent_to_skill:

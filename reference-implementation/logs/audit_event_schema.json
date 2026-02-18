@@ -41,7 +41,9 @@
         "skillId": { "type": ["string", "null"] },
         "resolved": { "type": "boolean" },
         "category": { "type": ["string", "null"] },
-        "reasons": { "type": "array", "items": { "type": "string" } }
+        "reasons": { "type": "array", "items": { "type": "string" } },
+        "maxToolCallsPerTurn": { "type": ["number", "null"] },
+        "maxTurnDurationMs": { "type": ["number", "null"] }
       }
     },
     "policy": {
@@ -54,7 +56,9 @@
         },
         "reasons": { "type": "array", "items": { "type": "string" } },
         "allowedTools": { "type": "array", "items": { "type": "string" } },
-        "hitlRequired": { "type": "boolean" }
+        "hitlRequired": { "type": "boolean" },
+        "approvalId": { "type": ["string", "null"] },
+        "approvalStatus": { "type": ["string", "null"] }
       }
     },
     "subjectBinding": {
@@ -92,6 +96,41 @@
         "approvalStatus": { "type": "string", "enum": ["PENDING", "APPROVED", "REJECTED"] }
       }
     },
+    "budgets": {
+      "type": "object",
+      "properties": {
+        "maxToolCallsPerTurn": { "type": "number" },
+        "requestedToolCalls": { "type": "number" },
+        "executedToolCalls": { "type": "number" },
+        "maxTurnDurationMs": { "type": "number" },
+        "turnDurationMs": { "type": "number" },
+        "withinToolBudget": { "type": "boolean" },
+        "withinTurnBudget": { "type": "boolean" }
+      }
+    },
+    "timeline": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "step": { "type": "string" },
+          "status": { "type": "string" },
+          "detail": { "type": "string" },
+          "elapsedMs": { "type": "number" },
+          "timestamp": { "type": "string" }
+        }
+      }
+    },
+    "decisionSupport": {
+      "type": "object",
+      "properties": {
+        "confidence": { "type": "number" },
+        "riskTier": { "type": "string" },
+        "decision": { "type": "string" },
+        "escalated": { "type": "boolean" },
+        "why": { "type": "array", "items": { "type": "string" } }
+      }
+    },
     "outcome": {
       "type": "object",
       "required": ["responseType", "responseSummary"],
@@ -99,7 +138,8 @@
         "responseType": { "type": "string", "enum": ["KB_ONLY", "TOOL_BACKED", "REFUSAL", "ESCALATION"] },
         "responseSummary": { "type": "string", "description": "PHI-minimized summary" },
         "citations": { "type": "array", "items": { "type": "string" } },
-        "killSwitchesActive": { "type": "array", "items": { "type": "string" } }
+        "killSwitchesActive": { "type": "array", "items": { "type": "string" } },
+        "verification": { "type": ["object", "null"] }
       }
     }
   }

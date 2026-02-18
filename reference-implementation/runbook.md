@@ -39,6 +39,7 @@ This runbook demonstrates the reference implementation as a **control plane** fo
 
 ### What you show
 - Policy output: allow + reasons + tool list
+- Skill tab showing resolved skill + budget limits
 - Tool invocation metadata (no raw PHI payloads)
 - Audit event line similar to first record in `logs/sample_audit_events.jsonl`
 
@@ -65,7 +66,8 @@ This runbook demonstrates the reference implementation as a **control plane** fo
 
 ### What you show
 - Policy output: HITL required + reasons
-- Tool executor refusing execution without approvalId
+- Approval simulation panel with generated `approvalId` (approve/deny controls)
+- Tool executor refusing execution until approval status is `APPROVED`
 - Audit event line similar to second record in `logs/sample_audit_events.jsonl`
 
 ### What you say (architect angle)
@@ -99,6 +101,8 @@ This runbook demonstrates the reference implementation as a **control plane** fo
 ## Success criteria (what “good” looks like)
 - Deny-by-default: unmapped intents never get tools
 - Transactional tools require approvalId (cannot be bypassed)
+- Skill-based routing is visible for every request
+- Skill budgets enforced (tool calls and turn duration)
 - Voice channel triggers confirmation for MEDIUM/HIGH (if you demo voice)
 - Audit trace exists for every scenario and is PHI-minimized
 - Degrade modes are defined (KB-only, HITL-first, circuit breaker)

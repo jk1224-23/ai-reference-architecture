@@ -22,7 +22,9 @@ def execute_tools(
     intent: dict,
     tool_requests: list[dict] | None,
     approval_id: str | None = None,
+    approval_status: str | None = None,
     kill_switch_state: dict | None = None,
+    max_tool_calls_per_turn: int | None = None,
 ) -> list[dict]:
     """
     Executes tool calls only if policy allows them.
@@ -45,10 +47,26 @@ def execute_tools(
 
     results: list[dict] = []
 
-    for req in tool_requests:
+    for index, req in enumerate(tool_requests):
         tool_name = req.get("name")
         tool_input = req.get("input") or {}
         tool_request_id = f"t-{uuid.uuid4().hex[:8]}"
+
+        if max_tool_calls_per_turn is not None and index >= max_tool_calls_per_turn:
+            results.append(
+                _tool_event(
+                    tool_name=tool_name or "UNKNOWN",
+                    tool_version=_tool_version(tool_name or "UNKNOWN"),
+                    request_id=tool_request_id,
+                    result="BLOCKED",
+                    duration_ms=0,
+                    input_summary=_summarize_input(tool_input),
+                    output_summary={},
+                    error_code="TOOL_CALL_BUDGET_EXCEEDED",
+                    error_message="Skill budget exceeded max tool calls for this turn",
+                )
+            )
+            continue
 
         if not tool_name:
             results.append(
@@ -117,6 +135,36 @@ def execute_tools(
             continue
 
         if meta.get("type") == "TRANSACTIONAL":
+            if approval_status == "REJECTED":
+                results.append(
+                    _tool_event(
+                        tool_name=tool_name,
+                        tool_version=tool_version,
+                        request_id=tool_request_id,
+                        result="BLOCKED",
+                        duration_ms=0,
+                        input_summary=_summarize_input(tool_input),
+                        output_summary={},
+                        error_code="HITL_APPROVAL_REJECTED",
+                        error_message="Transactional tool denied: approval was rejected.",
+                    )
+                )
+                continue
+            if approval_status in {"PENDING", "UNKNOWN", "MISSING"}:
+                results.append(
+                    _tool_event(
+                        tool_name=tool_name,
+                        tool_version=tool_version,
+                        request_id=tool_request_id,
+                        result="BLOCKED",
+                        duration_ms=0,
+                        input_summary=_summarize_input(tool_input),
+                        output_summary={},
+                        error_code="HITL_APPROVAL_PENDING",
+                        error_message="Transactional tool blocked until approval is approved.",
+                    )
+                )
+                continue
             if not approval_id:
                 results.append(
                     _tool_event(

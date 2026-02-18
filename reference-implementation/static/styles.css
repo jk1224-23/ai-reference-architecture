@@ -82,6 +82,14 @@ button {
   font-weight: 600;
 }
 button:hover { opacity: 0.95; }
+.secondary {
+  background: #334155;
+  color: #e2e8f0;
+}
+.danger {
+  background: var(--danger);
+  color: #fff;
+}
 
 .row {
   display: grid;
@@ -140,6 +148,44 @@ button:hover { opacity: 0.95; }
   padding: 12px;
   color: #cbd5e1;
   white-space: pre;
+}
+
+.controls {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 12px;
+  background: var(--card);
+  display: grid;
+  gap: 8px;
+}
+
+.controls label {
+  color: var(--text);
+  font-size: 14px;
+}
+
+.controls input[type="checkbox"] {
+  width: auto;
+  margin-right: 8px;
+}
+
+.policy-card {
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 12px;
+  background: #0b1220;
+  white-space: pre-wrap;
+}
+
+.approval-panel {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  background: #0b1220;
+  margin-bottom: 12px;
 }
 
 @media (max-width: 960px) {
