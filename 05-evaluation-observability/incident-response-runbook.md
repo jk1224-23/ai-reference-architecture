@@ -1,4 +1,4 @@
-﻿# AI Incident Response Runbook (LLM + Agents)
+# AI Incident Response Runbook (LLM + Agents)
 
 This runbook defines how to detect, triage, contain, and remediate incidents involving LLMs, agents, tools, and retrieval systems.
 

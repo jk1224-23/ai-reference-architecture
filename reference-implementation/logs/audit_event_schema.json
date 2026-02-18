@@ -1,4 +1,4 @@
-﻿{
+{
   "version": "1.0",
   "description": "Audit event schema for agentic assistant interactions (PHI-minimized).",
   "required": [

@@ -1,4 +1,4 @@
-﻿# Deterministic Policy Rules (example)
+# Deterministic Policy Rules (example)
 version: "1.0"
 
 # Kill switches (operational controls)

@@ -1,4 +1,4 @@
-﻿# Prompt Injection Posture (Enterprise)
+# Prompt Injection Posture (Enterprise)
 
 This document defines how we **assume**, **detect**, **contain**, and **mitigate** prompt injection and related instruction-manipulation attacks across chat, RAG, tools, and voice.
 

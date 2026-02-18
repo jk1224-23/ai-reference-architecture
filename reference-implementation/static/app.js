@@ -1,4 +1,4 @@
-﻿const form = document.getElementById("chat-form");
+const form = document.getElementById("chat-form");
 const transcriptEl = document.getElementById("transcript");
 const tabs = document.querySelectorAll(".tab");
 const tabContents = {
@@ -12,6 +12,8 @@ const chipCorrelation = document.getElementById("chip-correlation");
 const chipRisk = document.getElementById("chip-risk");
 const chipDecision = document.getElementById("chip-decision");
 const chipMode = document.getElementById("chip-mode");
+const userRoleEl = document.getElementById("userRole");
+const userIdEl = document.getElementById("userId");
 
 function setChips(payload) {
   chipCorrelation.textContent = `Correlation: ${payload?.audit?.correlationId ?? "—"}`;
@@ -45,7 +47,8 @@ async function sendMessage(event) {
   if (!message) return;
 
   const channel = document.getElementById("channel").value;
-  const userRole = document.getElementById("userRole").value;
+  const userRole = userRoleEl.value;
+  const userId = userIdEl.value;
   const approvalId = document.getElementById("approvalId").value.trim() || null;
 
   addTranscriptEntry("user", message);
@@ -54,7 +57,7 @@ async function sendMessage(event) {
     const res = await fetch("/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message, channel, userRole, approvalId }),
+      body: JSON.stringify({ message, channel, userRole, userId, approvalId }),
     });
     if (!res.ok) {
       throw new Error(`Server returned ${res.status}`);
@@ -69,6 +72,10 @@ async function sendMessage(event) {
 }
 
 form.addEventListener("submit", sendMessage);
+
+userIdEl.addEventListener("change", () => {
+  userRoleEl.value = userIdEl.value === "demo-agent-1" ? "AGENT" : "MEMBER";
+});
 
 tabs.forEach((tab) => {
   tab.addEventListener("click", () => {

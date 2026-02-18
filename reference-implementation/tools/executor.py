@@ -1,10 +1,12 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
+import time
+import uuid
 from dataclasses import dataclass
 from typing import Any
 
-from tools.claims_read_tool import claims_read
 from tools.case_create_tool import case_create
+from tools.claims_read_tool import claims_read
 from tools.registry import load_tool_registry
 
 
@@ -20,17 +22,15 @@ def execute_tools(
     intent: dict,
     tool_requests: list[dict] | None,
     approval_id: str | None = None,
+    kill_switch_state: dict | None = None,
 ) -> list[dict]:
     """
-    Executes tool calls ONLY if policy allows it.
-
-    MVP Option-A:
-      - claims.read.v1 (READ_ONLY) : allowed for CLAIM_STATUS
-      - case.create.v1 (TRANSACTIONAL) : allowed only with HITL + approvalId
+    Executes tool calls only if policy allows them.
+    Emits schema-aligned tool events for audit and UI inspection.
     """
     tool_requests = tool_requests or []
+    kill_switch_state = kill_switch_state or {}
 
-    # If policy denies or is KB-only, do not execute anything.
     decision = policy.get("decision")
     if decision in ("DENY", "DEGRADED_KB_ONLY"):
         return []
@@ -39,68 +39,169 @@ def execute_tools(
     if not allowed:
         return []
 
-    registry = load_tool_registry()  # reads tools/tool_registry.json
-
-    # MVP: only allow execution for tools present in registry (hard safety)
+    registry = load_tool_registry()
     registry_tools = {t["name"]: t for t in registry.get("tools", [])}
+    breakers = kill_switch_state.get("tool_circuit_breakers") or {}
 
     results: list[dict] = []
 
     for req in tool_requests:
         tool_name = req.get("name")
         tool_input = req.get("input") or {}
+        tool_request_id = f"t-{uuid.uuid4().hex[:8]}"
 
-        # Basic request validation
         if not tool_name:
-            results.append(_tool_event_blocked(None, "VALIDATION_ERROR", "Missing tool name"))
-            continue
-
-        if tool_name not in allowed:
-            results.append(_tool_event_blocked(tool_name, "AUTHZ_DENIED", "Tool not allowed by policy"))
+            results.append(
+                _tool_event(
+                    tool_name="UNKNOWN",
+                    tool_version="v0",
+                    request_id=tool_request_id,
+                    result="BLOCKED",
+                    duration_ms=0,
+                    input_summary={},
+                    output_summary={},
+                    error_code="VALIDATION_ERROR",
+                    error_message="Missing tool name",
+                )
+            )
             continue
 
         meta = registry_tools.get(tool_name)
+        tool_version = _tool_version(tool_name)
         if not meta:
-            results.append(_tool_event_blocked(tool_name, "VALIDATION_ERROR", "Tool not found in registry"))
+            results.append(
+                _tool_event(
+                    tool_name=tool_name,
+                    tool_version=tool_version,
+                    request_id=tool_request_id,
+                    result="FAILURE",
+                    duration_ms=0,
+                    input_summary=_summarize_input(tool_input),
+                    output_summary={},
+                    error_code="VALIDATION_ERROR",
+                    error_message="Tool not found in registry",
+                )
+            )
             continue
 
-        # Transactional tools require approvalId (HITL binding)
+        if tool_name not in allowed:
+            results.append(
+                _tool_event(
+                    tool_name=tool_name,
+                    tool_version=tool_version,
+                    request_id=tool_request_id,
+                    result="BLOCKED",
+                    duration_ms=0,
+                    input_summary=_summarize_input(tool_input),
+                    output_summary={},
+                    error_code="AUTHZ_DENIED",
+                    error_message="Tool not allowed by policy",
+                )
+            )
+            continue
+
+        if breakers.get(tool_name):
+            results.append(
+                _tool_event(
+                    tool_name=tool_name,
+                    tool_version=tool_version,
+                    request_id=tool_request_id,
+                    result="BLOCKED",
+                    duration_ms=0,
+                    input_summary=_summarize_input(tool_input),
+                    output_summary={},
+                    error_code="CIRCUIT_BREAKER_OPEN",
+                    error_message="Tool temporarily disabled by circuit breaker",
+                )
+            )
+            continue
+
         if meta.get("type") == "TRANSACTIONAL":
             if not approval_id:
                 results.append(
-                    _tool_event_blocked(
-                        tool_name,
-                        "HITL_APPROVAL_REQUIRED",
-                        "Transactional tool requires approvalId (HITL).",
+                    _tool_event(
+                        tool_name=tool_name,
+                        tool_version=tool_version,
+                        request_id=tool_request_id,
+                        result="BLOCKED",
+                        duration_ms=0,
+                        input_summary=_summarize_input(tool_input),
+                        output_summary={},
+                        error_code="HITL_APPROVAL_REQUIRED",
+                        error_message="Transactional tool requires approvalId (HITL).",
                     )
                 )
                 continue
-            # bind approvalId into tool input if not already included
             tool_input = dict(tool_input)
             tool_input.setdefault("approvalId", approval_id)
 
-        # Execute
+        start = time.time()
         try:
             output = _dispatch(tool_name, tool_input)
+            output_duration = int((time.time() - start) * 1000)
+
+            if isinstance(output, dict) and output.get("result") in {"FAILED", "BLOCKED"}:
+                error = output.get("error") or {}
+                normalized_result = "BLOCKED" if output.get("result") == "BLOCKED" else "FAILURE"
+                results.append(
+                    _tool_event(
+                        tool_name=tool_name,
+                        tool_version=tool_version,
+                        request_id=tool_request_id,
+                        result=normalized_result,
+                        duration_ms=output_duration,
+                        input_summary=_summarize_input(tool_input),
+                        output_summary={},
+                        error_code=error.get("code", "UNKNOWN"),
+                        error_message=error.get("message", "Tool execution failed"),
+                    )
+                )
+                continue
+
             results.append(
-                {
-                    "name": tool_name,
-                    "result": "SUCCESS",
-                    "outputSummary": output,
-                }
+                _tool_event(
+                    tool_name=tool_name,
+                    tool_version=tool_version,
+                    request_id=tool_request_id,
+                    result="SUCCESS",
+                    duration_ms=int((output or {}).get("durationMs", output_duration)),
+                    input_summary=_summarize_input(tool_input),
+                    output_summary=_summarize_output(output),
+                )
             )
-        except ToolExecutionError as e:
-            results.append(_tool_event_failed(tool_name, e.code, e.message))
-        except Exception as e:  # safe fallback
-            results.append(_tool_event_failed(tool_name, "UNKNOWN", str(e)))
+        except ToolExecutionError as exc:
+            results.append(
+                _tool_event(
+                    tool_name=tool_name,
+                    tool_version=tool_version,
+                    request_id=tool_request_id,
+                    result="FAILURE",
+                    duration_ms=int((time.time() - start) * 1000),
+                    input_summary=_summarize_input(tool_input),
+                    output_summary={},
+                    error_code=exc.code,
+                    error_message=exc.message,
+                )
+            )
+        except Exception as exc:  # safe fallback
+            results.append(
+                _tool_event(
+                    tool_name=tool_name,
+                    tool_version=tool_version,
+                    request_id=tool_request_id,
+                    result="FAILURE",
+                    duration_ms=int((time.time() - start) * 1000),
+                    input_summary=_summarize_input(tool_input),
+                    output_summary={},
+                    error_code="UNKNOWN",
+                    error_message=str(exc),
+                )
+            )
 
     return results
 
 
 def _dispatch(tool_name: str, tool_input: dict[str, Any]) -> dict[str, Any]:
-    """
-    MVP Option-A dispatcher. Only two tools exist.
-    """
     if tool_name == "claims.read.v1":
         _require(tool_input, ["claimId"])
         return claims_read(claim_id=tool_input["claimId"])
@@ -117,23 +218,55 @@ def _dispatch(tool_name: str, tool_input: dict[str, Any]) -> dict[str, Any]:
     raise ToolExecutionError("VALIDATION_ERROR", f"Unknown tool: {tool_name}")
 
 
+def _tool_version(tool_name: str) -> str:
+    if ".v" in tool_name:
+        return "v" + tool_name.split(".v")[-1]
+    return "v1"
+
+
 def _require(payload: dict[str, Any], keys: list[str]) -> None:
-    missing = [k for k in keys if not payload.get(k)]
+    missing = [key for key in keys if not payload.get(key)]
     if missing:
         raise ToolExecutionError("VALIDATION_ERROR", f"Missing required inputs: {', '.join(missing)}")
 
 
-def _tool_event_blocked(tool_name: str | None, code: str, message: str) -> dict:
+def _summarize_input(tool_input: dict[str, Any]) -> dict:
+    return {key: tool_input.get(key) for key in ("claimId", "approvalId", "subject") if key in tool_input}
+
+
+def _summarize_output(output: dict[str, Any] | None) -> dict:
+    output = output or {}
     return {
-        "name": tool_name or "UNKNOWN",
-        "result": "BLOCKED",
-        "error": {"code": code, "message": message},
+        key: output.get(key)
+        for key in ("claimId", "caseId", "status", "lastUpdated", "durationMs")
+        if key in output
     }
 
 
-def _tool_event_failed(tool_name: str, code: str, message: str) -> dict:
-    return {
+def _tool_event(
+    *,
+    tool_name: str,
+    tool_version: str,
+    request_id: str,
+    result: str,
+    duration_ms: int,
+    input_summary: dict,
+    output_summary: dict,
+    error_code: str | None = None,
+    error_message: str | None = None,
+) -> dict:
+    event = {
+        "toolName": tool_name,
+        "toolVersion": tool_version,
+        "requestId": request_id,
+        "durationMs": duration_ms,
+        "result": result,
+        "inputSummary": input_summary,
+        "outputSummary": output_summary,
+        # Legacy key kept for UI backward compatibility.
         "name": tool_name,
-        "result": "FAILED",
-        "error": {"code": code, "message": message},
     }
+    if error_code:
+        event["errorCode"] = error_code
+        event["error"] = {"code": error_code, "message": error_message or ""}
+    return event

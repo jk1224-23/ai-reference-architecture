@@ -1,4 +1,4 @@
-﻿# 5-Slide Interview Deck Script (with speaker notes)
+# 5-Slide Interview Deck Script (with speaker notes)
 
 ## Slide 1 — Title + stance
 **Title:** AI Reference Architecture — Healthcare Voice & Chat Assistant  

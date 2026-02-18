@@ -1,4 +1,6 @@
-﻿import uuid
+from __future__ import annotations
+
+import uuid
 from datetime import datetime, timezone
 
 from app.intent_classifier import classify_intent
@@ -38,8 +40,14 @@ def handle_request(
         entities=intent_result.get("entities", {}),
         channel=channel,
         user_role=user_role,
+        user_id=user_id,
         kill_switch_state=kill_switch_state,
     )
+
+    if policy_result.get("hitlRequired"):
+        policy_result["approvalId"] = approval_id or f"apr-{request_id}"
+        if approval_id:
+            policy_result.setdefault("reasons", []).append("HITL_APPROVAL_PROVIDED")
 
     # 3) prepare tool requests (only for allowed tools)
     tool_requests = []
@@ -66,6 +74,7 @@ def handle_request(
         intent=intent_result,
         tool_requests=tool_requests,
         approval_id=approval_id,
+        kill_switch_state=kill_switch_state,
     )
 
     # 5) response assembly (evidence-first)
@@ -99,6 +108,7 @@ def handle_request(
             "reasons": policy_result.get("reasons", []),
             "allowedTools": policy_result.get("allowedTools", []),
             "hitlRequired": bool(policy_result.get("hitlRequired", False)),
+            "approvalId": policy_result.get("approvalId"),
             "killSwitchesActive": policy_result.get("killSwitchesActive", []),
         },
         "toolCalls": tool_calls,
@@ -106,8 +116,13 @@ def handle_request(
             "responseType": response["responseType"],
             "responseSummary": response.get("responseSummary", ""),
             "citations": response.get("citations", []),
+            "killSwitchesActive": policy_result.get("killSwitchesActive", []),
         },
     }
+
+    subject_binding = policy_result.get("subjectBinding")
+    if subject_binding:
+        audit_event["subjectBinding"] = subject_binding
 
     if "hitl" in response:
         audit_event["hitl"] = response["hitl"]

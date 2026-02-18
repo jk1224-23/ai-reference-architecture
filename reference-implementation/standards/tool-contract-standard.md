@@ -1,4 +1,4 @@
-﻿# Tool Contract Standard (MVP)
+# Tool Contract Standard (MVP)
 
 ## Purpose
 A **tool contract** is the single source of truth for:

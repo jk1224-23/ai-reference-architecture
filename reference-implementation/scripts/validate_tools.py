@@ -1,35 +1,77 @@
-﻿import json
+import json
 import sys
 from pathlib import Path
 
-from jsonschema import validate  # pip install jsonschema
+import yaml
+from jsonschema import validate
 
 
 ROOT = Path(__file__).resolve().parents[1]
 REGISTRY = ROOT / "tools" / "tool_registry.json"
 SCHEMA = ROOT / "standards" / "schemas" / "tool-contract.schema.json"
+ALLOWLIST = ROOT / "config" / "tool_allowlist.yaml"
 
 
 def main() -> int:
-    if not REGISTRY.exists():
-        print(f"ERROR: Missing tool registry: {REGISTRY}")
-        return 2
-    if not SCHEMA.exists():
-        print(f"ERROR: Missing schema: {SCHEMA}")
+    required_files = [REGISTRY, SCHEMA, ALLOWLIST]
+    missing = [path for path in required_files if not path.exists()]
+    if missing:
+        for path in missing:
+            print(f"ERROR: Missing required file: {path}")
         return 2
 
     schema = json.loads(SCHEMA.read_text(encoding="utf-8"))
     registry = json.loads(REGISTRY.read_text(encoding="utf-8"))
+    allowlist = yaml.safe_load(ALLOWLIST.read_text(encoding="utf-8"))
 
     validate(instance=registry, schema=schema)
 
-    tool_names = [t["name"] for t in registry.get("tools", [])]
+    tool_names = [tool["name"] for tool in registry.get("tools", [])]
     if len(tool_names) != len(set(tool_names)):
-        dupes = sorted({n for n in tool_names if tool_names.count(n) > 1})
+        dupes = sorted({name for name in tool_names if tool_names.count(name) > 1})
         print(f"ERROR: Duplicate tool names found: {dupes}")
         return 2
 
-    print("OK: tool_registry.json matches the Tool Contract schema.")
+    registry_map = {tool["name"]: tool for tool in registry.get("tools", [])}
+    errors: list[str] = []
+
+    intents = (allowlist or {}).get("intents") or {}
+    for intent_name, intent_cfg in intents.items():
+        for allowed in intent_cfg.get("allowed_tools", []) or []:
+            tool_name = allowed.get("name")
+            if not tool_name:
+                errors.append(f"{intent_name}: allowed_tools entry missing name")
+                continue
+
+            registry_tool = registry_map.get(tool_name)
+            if not registry_tool:
+                errors.append(f"{intent_name}: tool '{tool_name}' is not defined in tool_registry.json")
+                continue
+
+            declared_type = allowed.get("tool_type")
+            actual_type = registry_tool.get("type")
+            if declared_type and declared_type != actual_type:
+                errors.append(
+                    f"{intent_name}: tool '{tool_name}' type mismatch (allowlist={declared_type}, registry={actual_type})"
+                )
+
+            requires_approval = bool(allowed.get("requires_approval", False))
+            registry_requires_approval = bool(registry_tool.get("requiresApprovalId", False))
+            if requires_approval and not registry_requires_approval:
+                errors.append(
+                    f"{intent_name}: tool '{tool_name}' requires approval in allowlist but registry does not enforce it"
+                )
+            if actual_type == "TRANSACTIONAL" and not requires_approval:
+                errors.append(
+                    f"{intent_name}: transactional tool '{tool_name}' must set requires_approval=true in allowlist"
+                )
+
+    if errors:
+        for error in errors:
+            print(f"ERROR: {error}")
+        return 2
+
+    print("OK: tool_registry.json matches schema and allowlist mappings are consistent.")
     return 0
 
 

@@ -1,4 +1,4 @@
-﻿# Article 2 - C4 Container  
+# Article 2 - C4 Container  
 ## Inside the AI Assistant Platform
 
 ---

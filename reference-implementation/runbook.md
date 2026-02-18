@@ -1,4 +1,4 @@
-﻿# MVP Demo Runbook (10 minutes)
+# MVP Demo Runbook (10 minutes)
 
 This runbook demonstrates the reference implementation as a **control plane** for a regulated-domain agentic assistant. The goal is to prove governance and safety controls, not UI polish.
 

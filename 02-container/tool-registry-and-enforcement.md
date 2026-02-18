@@ -1,4 +1,4 @@
-﻿# Tool Registry and Enforcement
+# Tool Registry and Enforcement
 
 This document defines the **Tool Registry** as the authoritative control plane for agent tool usage and the **enforcement layer** that ensures tools are invoked safely, consistently, and auditable — **outside the LLM**.
 

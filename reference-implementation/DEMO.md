@@ -1,4 +1,4 @@
-﻿# DEMO (portfolio-ready)
+# DEMO (portfolio-ready)
 
 ## Run the stack
 ```bash
@@ -29,6 +29,10 @@ Get-Process -Name uvicorn,python -ErrorAction SilentlyContinue | Stop-Process -F
    - Prompt: "File an appeal for denied claim 12345."
    - Add `approvalId` (e.g., `approval-123`) in the UI field or JSON.
    - Expected: decision=ALLOW_HITL, `case.create.v1` runs and returns caseId/status, responseType=TOOL_BACKED.
+5) Unauthorized subject access (deny)
+   - Prompt: "What is the status of claim 22222?"
+   - User: `demo-user-1`
+   - Expected: decision=DENY with reason `SUBJECT_NOT_AUTHORIZED`; no tool execution.
 
 ## UI checklist (portfolio)
 - Chips show correlationId, risk, decision, mode
@@ -47,6 +51,10 @@ curl -X POST http://localhost:8001/chat \
 - Schema: `python scripts/validate_tools.py`
 - Tests: `python -m pytest -q`
 - Audit: `logs/audit.jsonl` gets a new line per request
+
+## Optional kill-switch demo
+- `AI_KB_ONLY_MODE=true` to force KB-only behavior.
+- `AI_TOOL_CIRCUIT_BREAKERS=claims.read.v1` to block claim status tools.
 ## Diagrams (for walkthrough)
 - Flow: docs/diagrams/control-plane-flow.mmd
 - Sequence (claim status): docs/diagrams/sequence-claim-status.mmd

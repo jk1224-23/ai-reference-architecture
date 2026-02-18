@@ -1,8 +1,42 @@
-﻿def assemble_response(message: str, intent: dict, policy: dict, tool_calls: list[dict], channel: str) -> dict:
+from __future__ import annotations
+
+def _is_subject_binding_denial(reasons: list[str]) -> bool:
+    return any(
+        reason in {"SUBJECT_BINDING_REQUIRED", "MISSING_SUBJECT_ID", "SUBJECT_NOT_FOUND", "SUBJECT_NOT_AUTHORIZED", "UNKNOWN_USER"}
+        for reason in reasons
+    )
+
+
+def _is_circuit_breaker_denial(reasons: list[str]) -> bool:
+    return any(reason.startswith("TOOL_CIRCUIT_BREAKER_ACTIVE:") for reason in reasons)
+
+
+def _find_tool_success(tool_calls: list[dict], tool_name: str) -> dict | None:
+    for tool_call in tool_calls:
+        call_name = tool_call.get("toolName") or tool_call.get("name")
+        if call_name == tool_name and tool_call.get("result") == "SUCCESS":
+            return tool_call
+    return None
+
+
+def assemble_response(message: str, intent: dict, policy: dict, tool_calls: list[dict], channel: str) -> dict:
     decision = policy["decision"]
     intent_name = intent["intent"]
+    reasons = policy.get("reasons", [])
 
     if decision == "DENY":
+        if _is_subject_binding_denial(reasons):
+            return {
+                "responseType": "REFUSAL",
+                "responseSummary": "Denied due to missing or unauthorized subject binding.",
+                "message": "I can’t access that claim in this session. Verify the claim ID and authorization, or contact support."
+            }
+        if _is_circuit_breaker_denial(reasons):
+            return {
+                "responseType": "ESCALATION",
+                "responseSummary": "Denied because a required tool is temporarily disabled.",
+                "message": "That action is temporarily unavailable due to a safety control. Please try again later or contact support."
+            }
         return {
             "responseType": "REFUSAL",
             "responseSummary": "Refused unsafe or unmapped request; no tool executed.",
@@ -24,7 +58,7 @@
         }
 
     if decision == "ALLOW_HITL" and policy.get("hitlRequired", False):
-        success = next((t for t in tool_calls if t.get("result") == "SUCCESS"), None)
+        success = _find_tool_success(tool_calls, "case.create.v1")
         if success:
             case_id = (success.get("outputSummary") or {}).get("caseId", "pending")
             status = (success.get("outputSummary") or {}).get("status", "PENDING_REVIEW")
@@ -43,7 +77,7 @@
 
     # Tool-backed SoR response (MVP: claim status only)
     if intent_name == "CLAIM_STATUS" and policy["decision"] == "ALLOW":
-        success = next((t for t in tool_calls if t.get("result") == "SUCCESS"), None)
+        success = _find_tool_success(tool_calls, "claims.read.v1")
         if not success:
             return {
                 "responseType": "ESCALATION",

@@ -1,4 +1,4 @@
-﻿# Observability Spec (LLM + Agents)
+# Observability Spec (LLM + Agents)
 
 This document standardizes what we log, measure, and trace for LLM and agent systems to ensure:
 - debuggability (root cause analysis)

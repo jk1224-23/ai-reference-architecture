@@ -1,4 +1,6 @@
-﻿import re
+from __future__ import annotations
+
+import re
 
 
 def classify_intent(message: str, channel: str) -> dict:

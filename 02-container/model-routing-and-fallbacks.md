@@ -1,4 +1,4 @@
-﻿# Model Routing and Fallbacks
+# Model Routing and Fallbacks
 
 This document defines how the platform selects models (routing), how it degrades gracefully under failure (fallback), and how it enforces cost/latency/safety guardrails.
 

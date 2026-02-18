@@ -1,4 +1,4 @@
-﻿# Tool Allowlist (deny-by-default)
+# Tool Allowlist (deny-by-default)
 # Mapping: intent -> allowed tools + approval requirements
 version: "1.0"
 

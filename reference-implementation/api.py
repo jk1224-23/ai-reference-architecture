@@ -1,4 +1,7 @@
-﻿from pathlib import Path
+from __future__ import annotations
+
+from pathlib import Path
+from typing import Optional
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -18,7 +21,7 @@ class ChatRequest(BaseModel):
     userRole: str = "MEMBER"
     userId: str = "demo-user-1"
     sessionId: str = "demo-session-1"
-    approvalId: str | None = None
+    approvalId: Optional[str] = None
 
 
 @app.get("/health")
@@ -39,7 +42,7 @@ def chat(req: ChatRequest):
         )
         return result
     except Exception as exc:  # noqa: BLE001
-        raise HTTPException(status_code=500, detail=str(exc)) from exc
+        raise HTTPException(status_code=500, detail="Unexpected server error") from exc
 
 
 # Static assets
