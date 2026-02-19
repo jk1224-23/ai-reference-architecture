@@ -4,7 +4,8 @@ This repository provides a **practical, enterprise-ready reference architecture*
 
 ## Repo Boundaries
 - This repo defines the vendor-neutral reference architecture: principles, patterns, governance policies, and diagrams.
-- Implementation details belong in the companion repo: ai-reference-implementation.
+- Full implementation details belong in the companion repo: ai-reference-implementation.
+- A minimal implementation snapshot is also kept in this repo under `reference-implementation/` for cross-linking and review.
 
 ## Doc Conventions
 - Use vendor-neutral language and generic examples only.
@@ -26,14 +27,20 @@ This repository provides a **practical, enterprise-ready reference architecture*
 6. **Release checklist:** [00-overview/release-checklist.md](./00-overview/release-checklist.md)
 7. **C4 Context:** [01-context/c4-context.md](./01-context/c4-context.md)
 8. **C4 Container:** [02-container/c4-container.md](./02-container/c4-container.md)
-9. **Data strategy (RAG vs Systems of Record):** [03-data-strategy/rag-vs-systems-of-record.md](./03-data-strategy/rag-vs-systems-of-record.md)
-10. **Agent patterns:**
+9. **Governance (policies + threats):**
+   - [02-governance/ai-threat-model.md](./02-governance/ai-threat-model.md)
+   - [02-governance/tool-registry-policy.md](./02-governance/tool-registry-policy.md)
+10. **Data strategy (RAG vs Systems of Record):** [03-data-strategy/rag-vs-systems-of-record.md](./03-data-strategy/rag-vs-systems-of-record.md)
+11. **Agent patterns:**
    - [04-agent-patterns/bounded-autonomy.md](./04-agent-patterns/bounded-autonomy.md)
    - [04-agent-patterns/planner-executor.md](./04-agent-patterns/planner-executor.md)
    - [04-agent-patterns/human-in-the-loop.md](./04-agent-patterns/human-in-the-loop.md)
-11. **Evaluation & observability:** [05-evaluation-observability/evaluation-and-observability.md](./05-evaluation-observability/evaluation-and-observability.md)
-12. **Security & compliance:** [06-security-compliance/security-and-compliance.md](./06-security-compliance/security-and-compliance.md)
-13. **Operating model & change:** [07-operating-model/operating-model-and-change.md](./07-operating-model/operating-model-and-change.md)
+12. **Security posture (prompt injection):** [04-security/prompt-injection-posture.md](./04-security/prompt-injection-posture.md)
+13. **Evaluation & observability:** [05-evaluation-observability/evaluation-and-observability.md](./05-evaluation-observability/evaluation-and-observability.md)
+14. **Security & compliance:** [06-security-compliance/security-and-compliance.md](./06-security-compliance/security-and-compliance.md)
+15. **Operating model & change:** [07-operating-model/operating-model-and-change.md](./07-operating-model/operating-model-and-change.md)
+
+> Note: Folder numbering groups topics by reading order; some numbers repeat intentionally (e.g., `02-container` vs `02-governance`).
 
 * **Interview kit:** `08-interview-kit/5-slide-deck-script.md`
 * **Reference implementation plan:** `reference-implementation/README.md`

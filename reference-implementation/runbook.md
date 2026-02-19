@@ -30,19 +30,21 @@ This runbook demonstrates the reference implementation as a **control plane** fo
 
 ### Expected platform behavior
 1. Intent classification → `CLAIM_STATUS`, risk `MEDIUM`
-2. Policy decision → `ALLOW`
-3. Allowed tool → `claims.read.v1`
-4. Tool executes (read-only) → returns evidence (status, lastUpdated)
-5. Response assembled → evidence-first (no hallucinated SoR truth)
-6. Audit event written (tool call + decision + response summary)
+2. Skill routing → `skill.claim_status_lookup.v1`
+3. Policy decision → `ALLOW`
+4. Allowed tool → `claims.read.v1`
+5. Tool executes (read-only) → returns evidence (status, lastUpdated)
+6. Response assembled → evidence-first (no hallucinated SoR truth)
+7. Audit event written (skill + tool call + decision + response summary)
 
 ### What you show
 - Policy output: allow + reasons + tool list
+- Skill tab showing resolved skill + budget limits
 - Tool invocation metadata (no raw PHI payloads)
 - Audit event line similar to first record in `logs/sample_audit_events.jsonl`
 
 ### What you say (architect angle)
-- “Tool access is deterministic and allowlisted by intent.”
+- “Tool access is deterministic and allowlisted by skill + policy.”
 - “The response is grounded in tool evidence; the LLM doesn’t invent SoR truth.”
 
 ---
@@ -53,17 +55,19 @@ This runbook demonstrates the reference implementation as a **control plane** fo
 
 ### Expected platform behavior
 1. Intent classification → `APPEAL_INITIATION`, risk `HIGH`
-2. Policy decision → `ALLOW_HITL`
-3. Tool listed → `case.create.v1` (transactional) but **blocked without approvalId**
-4. System creates an approval request payload (draft) and pauses
-5. Audit event written with:
+2. Skill routing → `skill.claim_update.v1`
+3. Policy decision → `ALLOW_HITL`
+4. Tool listed → `case.create.v1` (transactional) but **blocked without approvalId**
+5. System creates an approval request payload (draft) and pauses
+6. Audit event written with:
    - decision = `ALLOW_HITL`
    - tool call result = `BLOCKED` + `APPROVAL_REQUIRED`
    - HITL status = `PENDING`
 
 ### What you show
 - Policy output: HITL required + reasons
-- Tool executor refusing execution without approvalId
+- Approval simulation panel with generated `approvalId` (approve/deny controls)
+- Tool executor refusing execution until approval status is `APPROVED`
 - Audit event line similar to second record in `logs/sample_audit_events.jsonl`
 
 ### What you say (architect angle)
@@ -97,6 +101,8 @@ This runbook demonstrates the reference implementation as a **control plane** fo
 ## Success criteria (what “good” looks like)
 - Deny-by-default: unmapped intents never get tools
 - Transactional tools require approvalId (cannot be bypassed)
+- Skill-based routing is visible for every request
+- Skill budgets enforced (tool calls and turn duration)
 - Voice channel triggers confirmation for MEDIUM/HIGH (if you demo voice)
 - Audit trace exists for every scenario and is PHI-minimized
 - Degrade modes are defined (KB-only, HITL-first, circuit breaker)

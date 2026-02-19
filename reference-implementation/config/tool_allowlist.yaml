@@ -7,16 +7,19 @@ default:
 
 intents:
   POLICY_EXPLANATION:
+    skill: "skill.kb_general.v1"
     risk_tier: LOW
     allowed_tools: []
     mode: "KB_ONLY"
 
   FAQ_GENERAL:
+    skill: "skill.kb_general.v1"
     risk_tier: LOW
     allowed_tools: []
     mode: "KB_ONLY"
 
   CLAIM_STATUS:
+    skill: "skill.claim_status_lookup.v1"
     risk_tier: MEDIUM
     allowed_tools:
       - name: "claims.read.v1"
@@ -24,6 +27,7 @@ intents:
         tool_type: "READ_ONLY"
 
   APPEAL_INITIATION:
+    skill: "skill.claim_update.v1"
     risk_tier: HIGH
     allowed_tools:
       - name: "case.create.v1"
