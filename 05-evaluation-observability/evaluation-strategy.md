@@ -150,3 +150,21 @@ The system must demonstrate:
 - Measurable reliability
 - Auditability
 - Regression safety
+
+## Confidence & Escalation Policy
+- Intent detection outputs: intent + confidence score (and optionally top candidates).
+- Confidence can be computed via margin between top candidates (don’t over-trust model self-reported confidence).
+- If confidence is low or ambiguity persists → ask clarification or escalate to higher-assurance model.
+- Escalation types: model escalation (small→medium→large) and control escalation (clarification→HITL).
+
+## Degraded Mode Policy
+
+The platform may enter degraded mode during model outages, cost spikes, or incident containment.
+
+In degraded mode:
+- Tier 0 (read-only) skills continue using small/medium models.
+- Tier 1 skills continue with stricter token limits and clarification-first responses.
+- Tier 2 skills require HITL before execution.
+- Tier 3 (high-risk mutation) skills are blocked or routed to manual processing.
+
+Degraded mode state must be auditable and reversible via administrative control.
