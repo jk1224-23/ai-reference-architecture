@@ -4,8 +4,8 @@ This repository provides a **practical, enterprise-ready reference architecture*
 
 ## Repo Boundaries
 - This repo defines the vendor-neutral reference architecture: principles, patterns, governance policies, and diagrams.
-- Full implementation details belong in the companion repo: ai-reference-implementation.
-- A minimal implementation snapshot is also kept in this repo under `reference-implementation/` for cross-linking and review.
+- Full implementation (including runnable sample code) belongs in the companion repo: ai-reference-implementation.
+- This repo keeps standards/specs only (e.g., tool contract standard + schemas) and vendor-neutral architecture artifacts.
 
 ## Doc Conventions
 - Use vendor-neutral language and generic examples only.
@@ -43,17 +43,21 @@ This repository provides a **practical, enterprise-ready reference architecture*
 > Note: Folder numbering groups topics by reading order; some numbers repeat intentionally (e.g., `02-container` vs `02-governance`).
 
 * **Interview kit:** `08-interview-kit/5-slide-deck-script.md`
-* **Reference implementation plan:** `reference-implementation/README.md`
+* **Reference implementation (code):** see companion repo `ai-reference-implementation/reference-implementation/`
 
 ## Repository structure
 - `00-overview/` - scope, non-goals, principles
 - `01-context/` - C4 Context diagram and boundaries
 - `02-container/` - C4 Container diagram and platform building blocks
+- `02-governance/` - threat model + governance policies
 - `03-data-strategy/` - RAG vs Systems of Record stance and governance
 - `04-agent-patterns/` - bounded autonomy, planner-executor, HITL controls
+- `04-security/` - prompt injection posture and security guidance
 - `05-evaluation-observability/` - quality, monitoring, tracing, evaluation
 - `06-security-compliance/` - PHI controls, RBAC, auditing, retention, threat model
 - `07-operating-model/` - rollout, enablement, change management, ownership
+- `08-interview-kit/` - interview-ready artifacts (scripts, decks)
+- `reference-implementation/` - standards/specs only (code lives in ai-reference-implementation)
 
 ## What's NOT in scope (non-goals)
 - Replacing systems-of-record or becoming a transactional source of truth
