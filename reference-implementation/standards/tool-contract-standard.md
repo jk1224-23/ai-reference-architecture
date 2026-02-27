@@ -36,6 +36,10 @@ Each tool entry in `tools/tool_registry.json` MUST include:
 If `type = TRANSACTIONAL`, then:
 - `requiresApprovalId = true`
 - `schema.input` MUST contain `approvalId`
+- `schema.input` SHOULD contain `idempotencyKey` for retry-safe writes.
+
+For demo implementations, idempotency can be stubbed at the tool boundary (for example, in-memory key cache).  
+Production implementations should enforce idempotency keys with durable storage and replay-window checks.
 
 ## Allowed Error Codes (recommended baseline)
 - `VALIDATION_ERROR`
