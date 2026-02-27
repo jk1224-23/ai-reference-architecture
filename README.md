@@ -2,6 +2,11 @@
 
 This repository provides a **practical, enterprise-ready reference architecture** for building a regulated-domain AI assistant (voice + chat) with **governed agent behavior**, **tool-based system access**, **RAG for explanatory knowledge**, and **audit-first observability**.
 
+## Start Here
+- **What this repo is:** vendor-neutral architecture guidance for bounded autonomy, policy enforcement, and audit-first operations.
+- **Read first:** [README-executive-summary.md](./README-executive-summary.md), [00-overview/architecture-placemat.md](./00-overview/architecture-placemat.md), [00-overview/architecture-decisions.md](./00-overview/architecture-decisions.md), [02-governance/ai-threat-model.md](./02-governance/ai-threat-model.md).
+- **Companion implementation repo:** `ai-reference-implementation` (public URL intentionally added during release hardening).
+
 ## Repo Boundaries
 - This repo defines the vendor-neutral reference architecture: principles, patterns, governance policies, and diagrams.
 - Full implementation (including runnable sample code) belongs in the companion repo: ai-reference-implementation.
@@ -17,6 +22,19 @@ This repository provides a **practical, enterprise-ready reference architecture*
 - Enterprise architects and platform engineers
 - Security/compliance stakeholders
 - Product teams building customer support / internal assistant experiences in regulated environments (e.g., healthcare)
+
+## Architecture Snapshot
+```mermaid
+flowchart LR
+    Users["Members / Providers / Agents"] --> Channels["Voice + Chat Channels"]
+    Channels --> Orchestrator["AI Orchestrator"]
+    Orchestrator --> Policy["Deterministic Policy Engine"]
+    Orchestrator --> RAG["RAG (explanatory knowledge)"]
+    Policy --> Tools["Allowlisted Tools"]
+    Tools --> SoR["Systems of Record"]
+    Orchestrator --> HITL["HITL Approval Path"]
+    Orchestrator --> Audit["Audit + Observability"]
+```
 
 ## How to read this repo (recommended order)
 1. **Executive summary:** [README-executive-summary.md](./README-executive-summary.md)

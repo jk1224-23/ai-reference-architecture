@@ -150,6 +150,9 @@ That is the role of an AI Architect.
    - user authentication and role
    - PHI access boundaries
    - rate limits and session constraints
+   
+   > **Why Subject Binding matters:** tool requests must be bound to the requesting user and the specific subject (for example, claim/member).  
+   > This prevents cross-member data leakage and makes every SoR lookup auditable against user identity + request context.
 3. **Tool allowlist** selects the **Claims Read API** (system-of-record) as the source of truth.
 4. **Tool execution** runs with **scoped, short-lived credentials** and captures an audit trace.
 5. **Response assembly**:
@@ -190,4 +193,3 @@ That is the role of an AI Architect.
 - HITL for high-risk intents and transactional actions
 - auditable traces for every tool call and decision outcome
 - redaction + data minimization on all responses and logs
-
