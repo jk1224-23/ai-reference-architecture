@@ -21,20 +21,19 @@ This repository provides a **practical, enterprise-ready reference architecture*
 - Security/compliance stakeholders
 - Product teams building customer support / internal assistant experiences in regulated environments (e.g., healthcare)
 
-## Architecture Diagram
+## Architecture Overview
 
-![AI Reference Architecture Diagram](./architecture-diagram.png)
+See [ARCHITECTURE.md](./ARCHITECTURE.md) for the complete interactive diagram and detailed layer breakdown.
 
 **Core principle:** AI proposes → Policy decides → Tools execute → Audit logs everything.
 
-This diagram illustrates how the platform separates concerns across layers:
-- **Users & Channels** (Voice, Chat, APIs)
-- **Orchestrator** (state, kill switches, routing)
-- **Control Planes** (policy enforcement, RAG retrieval, tool allowlists)
-- **Decision Outcomes** (allow, deny, HITL escalation)
-- **Systems of Record** (claims, eligibility, auth)
-- **Response Assembly** (evidence-based answers with citations)
-- **Audit Trail** (full traceability)
+The architecture separates concerns across distinct layers:
+- **Users & Channels** — Voice, Chat, APIs as entry points
+- **Orchestrator** — Central hub for routing, state, kill switches
+- **Control Planes** — Policy enforcement, RAG knowledge, tool execution (parallel)
+- **Decision Outcomes** — Allow, HITL escalation, or Deny
+- **Systems of Record** — Authoritative truth for transactional data
+- **Response Assembly** — Evidence-based responses with full traceability
 
 ## How to read this repo (recommended order)
 1. **Executive summary:** [README-executive-summary.md](./README-executive-summary.md)
