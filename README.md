@@ -5,12 +5,10 @@ This repository provides a **practical, enterprise-ready reference architecture*
 ## Start Here
 - **What this repo is:** vendor-neutral architecture guidance for bounded autonomy, policy enforcement, and audit-first operations.
 - **Read first:** [README-executive-summary.md](./README-executive-summary.md), [00-overview/architecture-placemat.md](./00-overview/architecture-placemat.md), [00-overview/architecture-decisions.md](./00-overview/architecture-decisions.md), [02-governance/ai-threat-model.md](./02-governance/ai-threat-model.md).
-- **Companion implementation repo:** `ai-reference-implementation` (public URL intentionally added during release hardening).
 
 ## Repo Boundaries
-- This repo defines the vendor-neutral reference architecture: principles, patterns, governance policies, and diagrams.
-- Full implementation (including runnable sample code) belongs in the companion repo: ai-reference-implementation.
-- This repo keeps standards/specs only (e.g., tool contract standard + schemas) and vendor-neutral architecture artifacts.
+- This repo is self-contained: principles, patterns, governance policies, diagrams, and standards/specs (e.g., tool contract standard + schemas).
+- A companion implementation repo (`ai-reference-implementation`) exists with runnable sample code — see its own README for details.
 
 ## Doc Conventions
 - Use vendor-neutral language and generic examples only.
@@ -23,18 +21,20 @@ This repository provides a **practical, enterprise-ready reference architecture*
 - Security/compliance stakeholders
 - Product teams building customer support / internal assistant experiences in regulated environments (e.g., healthcare)
 
-## Architecture Snapshot
-```mermaid
-flowchart LR
-    Users["Members / Providers / Agents"] --> Channels["Voice + Chat Channels"]
-    Channels --> Orchestrator["AI Orchestrator"]
-    Orchestrator --> Policy["Deterministic Policy Engine"]
-    Orchestrator --> RAG["RAG (explanatory knowledge)"]
-    Policy --> Tools["Allowlisted Tools"]
-    Tools --> SoR["Systems of Record"]
-    Orchestrator --> HITL["HITL Approval Path"]
-    Orchestrator --> Audit["Audit + Observability"]
-```
+## Architecture Diagram
+
+![AI Reference Architecture Diagram](./architecture-diagram.png)
+
+**Core principle:** AI proposes → Policy decides → Tools execute → Audit logs everything.
+
+This diagram illustrates how the platform separates concerns across layers:
+- **Users & Channels** (Voice, Chat, APIs)
+- **Orchestrator** (state, kill switches, routing)
+- **Control Planes** (policy enforcement, RAG retrieval, tool allowlists)
+- **Decision Outcomes** (allow, deny, HITL escalation)
+- **Systems of Record** (claims, eligibility, auth)
+- **Response Assembly** (evidence-based answers with citations)
+- **Audit Trail** (full traceability)
 
 ## How to read this repo (recommended order)
 1. **Executive summary:** [README-executive-summary.md](./README-executive-summary.md)
@@ -60,8 +60,8 @@ flowchart LR
 
 > Note: Folder numbering groups topics by reading order; some numbers repeat intentionally (e.g., `02-container` vs `02-governance`).
 
-* **Interview kit:** `08-interview-kit/5-slide-deck-script.md`
-* **Reference implementation (code):** see companion repo `ai-reference-implementation/reference-implementation/`
+* **Interview kit:** [08-interview-kit/5-slide-deck-script.md](./08-interview-kit/5-slide-deck-script.md)
+* **Standards & schemas:** [reference-implementation/standards/](./reference-implementation/standards/)
 
 ## Repository structure
 - `00-overview/` - scope, non-goals, principles
@@ -75,7 +75,7 @@ flowchart LR
 - `06-security-compliance/` - PHI controls, RBAC, auditing, retention, threat model
 - `07-operating-model/` - rollout, enablement, change management, ownership
 - `08-interview-kit/` - interview-ready artifacts (scripts, decks)
-- `reference-implementation/` - standards/specs only (code lives in ai-reference-implementation)
+- `reference-implementation/` - tool contract standard and JSON schemas
 
 ## What's NOT in scope (non-goals)
 - Replacing systems-of-record or becoming a transactional source of truth

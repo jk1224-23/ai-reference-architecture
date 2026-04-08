@@ -419,4 +419,20 @@ AI incidents may involve:
 - Identify decision ownership
 - Apply rollback before root-cause perfection
 
-Speed of containment matters more than precisio
+Speed of containment matters more than precision in the first minutes. Precision comes from the evidence bundle collected during containment.
+
+---
+
+## Summary
+
+The operating model is not a one-time document. It is a living governance contract that is updated whenever ownership, tooling, or risk posture changes.
+
+| Concern | Where it's governed |
+|---|---|
+| Who owns what | RACI table above |
+| How assets change safely | Change lifecycle and pipeline gates above |
+| How rollout is controlled | Canary strategy and degrade modes above |
+| What keeps the platform safe during incidents | Incident playbooks above |
+| How incidents feed back into the model | Post-incident review → corrective actions → change lifecycle |
+
+**Rule:** Every incident postmortem must produce at least one concrete change — to the allowlist, policy rules, evaluation suite, or this document. "No action required" postmortems are a governance gap.
