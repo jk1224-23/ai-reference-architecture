@@ -18,15 +18,19 @@ Agent Skill = bounded, versioned capability wrapper governing tool usage, data s
 1. Read-only Skills (Flow A)
 2. Transactional Skills (Flow B)
 
+Canonical naming convention: `skill.<name>.v<N>` (dot notation, versioned). All skill definitions and configs must use this form.
+
 | Skill | Category | Allowed Tool Types | Human Approval? | Observability Events |
 |---|---|---|---|---|
-| knowledge_retrieval | Read-only (Flow A) | Retrieval/RAG connector, policy/KB lookup | No | skill_invoked, retrieval_started, retrieval_completed, citations_attached, skill_failed |
-| `skill_kb_grounded_answer` | Read-only Skills (Flow A) | Knowledge search, document retrieval | No | intent_recognized, skill_resolved, retrieval_completed, response_emitted |
-| `skill_provider_lookup` | Read-only Skills (Flow A) | Directory lookup, metadata query | No | intent_recognized, skill_resolved, tool_called, response_emitted |
-| `skill_incident_context` | Read-only Skills (Flow A) | Ticket read, runbook search, health summary read | No | intent_recognized, skill_resolved, tool_called, citation_attached |
-| `skill_claim_update` | Transactional Skills (Flow B) | Record update, status transition, note append | Yes | intent_recognized, skill_resolved, approval_requested, tool_called, outcome_recorded |
-| `skill_change_request_submit` | Transactional Skills (Flow B) | Change draft/create/submit | Yes | intent_recognized, skill_resolved, approval_requested, tool_called, outcome_recorded |
-| `skill_incident_assignment` | Transactional Skills (Flow B) | Assignment update, priority update | Conditional by risk policy | intent_recognized, skill_resolved, approval_decision, tool_called, outcome_recorded |
+| `skill.kb_grounded_answer.v1` | Read-only (Flow A) | Knowledge search, document retrieval | No | intent_recognized, skill_resolved, retrieval_completed, citation_attached, response_emitted |
+| `skill.claim_status_lookup.v1` | Read-only (Flow A) | Claim record read | No | intent_recognized, skill_resolved, tool_called, response_emitted |
+| `skill.provider_lookup.v1` | Read-only (Flow A) | Directory lookup, metadata query | No | intent_recognized, skill_resolved, tool_called, response_emitted |
+| `skill.incident_context.v1` | Read-only (Flow A) | Ticket read, runbook search, health summary read | No | intent_recognized, skill_resolved, tool_called, citation_attached |
+| `skill.claim_update.v1` | Transactional (Flow B) | Record update, status transition, note append | Yes | intent_recognized, skill_resolved, approval_requested, tool_called, outcome_recorded |
+| `skill.change_request_submit.v1` | Transactional (Flow B) | Change draft/create/submit | Yes | intent_recognized, skill_resolved, approval_requested, tool_called, outcome_recorded |
+| `skill.incident_assignment.v1` | Transactional (Flow B) | Assignment update, priority update | Conditional by risk policy | intent_recognized, skill_resolved, approval_decision, tool_called, outcome_recorded |
+
+Skill definitions: see `skill-examples/` for full contracts per skill.
 
 ## Skill Lifecycle
 - **Draft:** skill definition exists but is not executable in production paths.
