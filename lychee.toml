@@ -6,8 +6,5 @@ exclude = [
   "http://127\\.0\\.0\\.1.*",
 ]
 
-# Continue checking on errors to get full report
-continue = true
-
 # Accept 404s (some GitHub repos may be private)
 accept = [404]
