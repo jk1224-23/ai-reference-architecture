@@ -91,3 +91,17 @@ The assistant is **not** a system-of-record and does **not** "do things by itsel
 - Prompts, tool calls, and policy decisions are trace-logged for audit
 - Safety controls exist (PII/PHI redaction, jailbreak detection, policy denies)
 - Evaluation and operational metrics are defined and monitored (SLOs + guardrail signals)
+
+---
+
+## Platform
+
+This repo is part of a larger AI architecture platform:
+
+| Repo | What It Does |
+|------|-------------|
+| [agentlens](https://github.com/jk1224-23/agentlens) | Animated visual guide — 10 agent patterns, 19 concepts, D3.js diagrams |
+| [ai-reference-implementation](https://github.com/jk1224-23/ai-reference-implementation) | Runnable implementation — config-driven policy, tool contracts, working code |
+| [js-reference-architecture](https://github.com/jk1224-23/js-reference-architecture) | Production JS/TS reference — backend patterns, session management, scaling |
+
+**Recommended reading order:** Start with [agentlens](https://github.com/jk1224-23/agentlens) for the visual overview → this repo for architecture decisions → [ai-reference-implementation](https://github.com/jk1224-23/ai-reference-implementation) to run it.
