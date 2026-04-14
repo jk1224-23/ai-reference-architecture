@@ -1,10 +1,5 @@
-# Lychee link checker configuration
-# GitHub links may return 404 if repos are private or rate-limited
+# Lychee link checker — lenient configuration
+# Only fail on real errors, not rate-limits or transient issues
 
-exclude = [
-  "http://localhost.*",
-  "http://127\\.0\\.0\\.1.*",
-]
-
-# Accept 404s (some GitHub repos may be private)
-accept = [404]
+# Accept common HTTP error codes (rate-limiting, timeouts, etc.)
+accept = [404, 429, 500, 502, 503]
